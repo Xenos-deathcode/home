@@ -5,7 +5,7 @@ import { updateInputsFromAnswers, updateLivePreviewDebounced } from "./ui.js";
 const PROJECTS_KEY = "smart_builder_projects_v2";
 const CURRENT_PROJECT_KEY = "smart_builder_current_project_v2";
 
-function readUserJson(key, fallback, userId = getCurrentUserId()) {
+export function readUserJson(key, fallback, userId = getCurrentUserId()) {
   try {
     const storageKey = getUserScopedStorageKey(key, userId || "");
     const raw = localStorage.getItem(storageKey);
@@ -16,7 +16,7 @@ function readUserJson(key, fallback, userId = getCurrentUserId()) {
   }
 }
 
-function writeUserJson(key, value, userId = getCurrentUserId()) {
+export function writeUserJson(key, value, userId = getCurrentUserId()) {
   const storageKey = getUserScopedStorageKey(key, userId || "");
   localStorage.setItem(storageKey, JSON.stringify(value));
 }
