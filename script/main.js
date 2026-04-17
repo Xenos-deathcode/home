@@ -1035,7 +1035,9 @@ if (logoutBtn) {
 
 document.addEventListener("keydown", (e) => {
   const key = String(e.key || "").toUpperCase();
+  console.log("Key pressed:", key, "Ctrl:", e.ctrlKey, "Shift:", e.shiftKey, "Alt:", e.altKey);
   if (e.ctrlKey && e.shiftKey && !e.altKey && key === DEV_SHORTCUT_KEY) {
+    console.log("Developer shortcut triggered!");
     e.preventDefault();
     maybeOpenDeveloperPage();
   }
