@@ -150,6 +150,12 @@ const developerProjectsTitle = document.getElementById("developer-projects-title
 const developerProjectsGrid = document.getElementById("developer-projects-grid");
 const closeDeveloperBtn = document.getElementById("close-developer-btn");
 
+// New fullscreen developer view elements
+const developerUsersList = document.getElementById("developer-users-list");
+const developerUserDetail = document.getElementById("developer-user-detail");
+const developerBackBtn = document.getElementById("developer-back-btn");
+const developerProjectsDetailedGrid = document.getElementById("developer-projects-detailed-grid");
+
 const saveAnswers = saveAnswersDebounced(saveStatusEl);
 const DEV_SHORTCUT_KEY = "D";
 let authMode = "signup";
@@ -331,12 +337,118 @@ function renderDashboard() {
 
 function renderDeveloperProjects(user) {
   const projects = listProjects(user.userId);
-  developerProjectsPanel.classList.remove("hidden");
-  developerProjectsTitle.textContent = `${user.accountName} (${user.userId}) Projects`;
-  developerProjectsGrid.innerHTML = "";
+  
+  // Count statistics
+  const upgradedCount = projects.filter(p => p.paid).length;
+  const downloadedCount = projects.filter(p => p.downloaded).length;
 
+  // Show fullscreen detail view
+  developerUsersList.classList.add("hidden");
+  developerUserDetail.classList.remove("hidden");
+  
+  // Update header
+  document.getElementById("developer-user-name").textContent = `${user.accountName} (@${user.username})`;
+
+  // Update user info
+  document.getElementById("dev-info-account-name").textContent = user.accountName;
+  document.getElementById("dev-info-username").textContent = user.username;
+  document.getElementById("dev-info-user-id").textContent = user.userId;
+  document.getElementById("dev-info-email").textContent = user.email || "-";
+  document.getElementById("dev-info-joined").textContent = formatDate(user.createdAt);
+  document.getElementById("dev-info-pro-status").textContent = user.isPro ? "✓ Pro User" : "Free User";
+
+  // Update profile
+  const profile = user.profile || {};
+  document.getElementById("dev-info-bio").textContent = profile.bio || "Not set";
+  document.getElementById("dev-info-gender").textContent = profile.gender || "Not specified";
+  document.getElementById("dev-info-picture").textContent = profile.picture ? "✓ Set" : "Not set";
+  document.getElementById("dev-info-trust").textContent = profile.trustLevel || "0";
+
+  // Update statistics
+  document.getElementById("dev-info-project-count").textContent = projects.length;
+  document.getElementById("dev-info-upgraded-count").textContent = upgradedCount;
+  document.getElementById("dev-info-downloaded-count").textContent = downloadedCount;
+
+  // Update blacklist
+  const blacklistContainer = document.getElementById("dev-info-blacklist");
+  const blacklist = user.blacklist || [];
+  if (blacklist.length === 0) {
+    blacklistContainer.innerHTML = "<p>No users blacklisted</p>";
+  } else {
+    blacklistContainer.innerHTML = blacklist.map(userId => `<div><span>${userId}</span></div>`).join("");
+  }
+
+  // Update ban/pro buttons
+  const banBtn = document.getElementById("dev-action-ban-btn");
+  const unbanBtn = document.getElementById("dev-action-unban-btn");
+  const proBtn = document.getElementById("dev-action-upgrade-pro-btn");
+  const removeProBtn = document.getElementById("dev-action-remove-pro-btn");
+
+  if (user.banned) {
+    banBtn.classList.add("hidden");
+    unbanBtn.classList.remove("hidden");
+  } else {
+    banBtn.classList.remove("hidden");
+    unbanBtn.classList.add("hidden");
+  }
+
+  if (user.isPro) {
+    proBtn.classList.add("hidden");
+    removeProBtn.classList.remove("hidden");
+  } else {
+    proBtn.classList.remove("hidden");
+    removeProBtn.classList.add("hidden");
+  }
+
+  // Setup action buttons
+  banBtn.onclick = () => {
+    if (confirm(`Ban ${user.accountName}?`)) {
+      banUser(user.userId);
+      document.getElementById("dev-action-status").textContent = "✓ User banned";
+      setTimeout(() => renderDeveloperProjects(user), 500);
+    }
+  };
+
+  unbanBtn.onclick = () => {
+    if (confirm(`Unban ${user.accountName}?`)) {
+      unbanUser(user.userId);
+      document.getElementById("dev-action-status").textContent = "✓ User unbanned";
+      setTimeout(() => renderDeveloperProjects(user), 500);
+    }
+  };
+
+  proBtn.onclick = () => {
+    if (confirm(`Upgrade ${user.accountName} to Pro?`)) {
+      const users = readUsers();
+      const key = `${normalize(user.accountName)}::${normalize(user.username)}`;
+      if (users[key]) {
+        users[key].isPro = true;
+        users[key].proSince = new Date().toISOString();
+        writeUsers(users);
+        document.getElementById("dev-action-status").textContent = "✓ User upgraded to Pro";
+        setTimeout(() => renderDeveloperProjects(user), 500);
+      }
+    }
+  };
+
+  removeProBtn.onclick = () => {
+    if (confirm(`Remove Pro from ${user.accountName}?`)) {
+      const users = readUsers();
+      const key = `${normalize(user.accountName)}::${normalize(user.username)}`;
+      if (users[key]) {
+        users[key].isPro = false;
+        users[key].proSince = null;
+        writeUsers(users);
+        document.getElementById("dev-action-status").textContent = "✓ Pro removed";
+        setTimeout(() => renderDeveloperProjects(user), 500);
+      }
+    }
+  };
+
+  // Render projects
+  developerProjectsDetailedGrid.innerHTML = "";
   if (projects.length === 0) {
-    developerProjectsGrid.innerHTML = '<div class="dashboard-empty">No projects for this user yet.</div>';
+    developerProjectsDetailedGrid.innerHTML = '<div class="dashboard-empty">No projects for this user yet.</div>';
     return;
   }
 
@@ -349,21 +461,27 @@ function renderDeveloperProjects(user) {
     card.innerHTML = `
       <h3>${project.name}</h3>
       <p>Project ID: ${project.id}</p>
+      <p>Created: ${formatDate(project.createdAt)}</p>
       <div class="admin-status ${project.paid ? "upgraded" : ""}">
-        ${project.paid ? "Upgraded project" : "Not upgraded"}
+        ${project.paid ? "✓ Upgraded" : "Not upgraded"}
       </div>
-      <p>${project.downloaded ? "Downloaded" : "Not downloaded yet"}</p>
+      <div class="admin-status ${project.downloaded ? "upgraded" : ""}">
+        ${project.downloaded ? "✓ Downloaded" : "Not downloaded"}
+      </div>
       <button type="button" class="btn-primary">${project.paid ? "Remove Upgrade" : "Upgrade Project"}</button>
     `;
 
     card.querySelector("button").addEventListener("click", () => {
       updateProject(project.id, { paid: !project.paid }, user.userId);
       renderDeveloperProjects(user);
-      updateProjectUi();
     });
 
-    developerProjectsGrid.appendChild(card);
+    developerProjectsDetailedGrid.appendChild(card);
   });
+}
+
+function normalize(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
 function renderDeveloperUsers() {
@@ -869,6 +987,13 @@ if (closeDeveloperBtn) {
     } else {
       showPage("auth-page");
     }
+  });
+}
+
+if (developerBackBtn) {
+  developerBackBtn.addEventListener("click", () => {
+    developerUsersList.classList.remove("hidden");
+    developerUserDetail.classList.add("hidden");
   });
 }
 
