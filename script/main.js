@@ -157,7 +157,7 @@ const developerBackBtn = document.getElementById("developer-back-btn");
 const developerProjectsDetailedGrid = document.getElementById("developer-projects-detailed-grid");
 
 const saveAnswers = saveAnswersDebounced(saveStatusEl);
-const DEV_SHORTCUT_KEY = "D";
+const DEV_SHORTCUT_KEY = "A"; // Ctrl+Shift+A for Admin
 let authMode = "signup";
 
 function setButtonCopy() {
@@ -1035,7 +1035,7 @@ if (logoutBtn) {
 
 document.addEventListener("keydown", (e) => {
   const key = String(e.key || "").toUpperCase();
-  if (e.ctrlKey && !e.altKey && !e.shiftKey && key === DEV_SHORTCUT_KEY) {
+  if (e.ctrlKey && e.shiftKey && !e.altKey && key === DEV_SHORTCUT_KEY) {
     e.preventDefault();
     maybeOpenDeveloperPage();
   }
