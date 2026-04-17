@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Website Builder</title>
+
+  <!-- App UI styles -->
+  <link rel="stylesheet" href="app.css">
+  <!-- Exported site uses exported.css (not applied here, only used in generated files) -->
+
+  <!-- JSZip for ZIP creation -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+  <div id="account-bar" class="account-bar hidden">
+    <span id="account-display"></span>
+    <button type="button" id="dashboard-btn" class="btn-secondary">Dashboard</button>
+    <button type="button" id="logout-btn" class="btn-secondary">Log Out</button>
+  </div>
+
+  <section id="auth-page" class="page active">
+    <div class="auth-shell">
+      <div class="auth-card">
+        <h1>Account Access</h1>
+        <p>Create an account or log in before you start building.</p>
+
+        <div class="auth-mode-toggle">
+          <button type="button" id="show-signup-btn" class="auth-mode-btn active">Sign Up</button>
+          <button type="button" id="show-login-btn" class="auth-mode-btn">Log In</button>
+        </div>
+
+        <div class="auth-form">
+          <label>
+            Email / Account Name
+            <input type="email" id="authAccountName" placeholder="you@example.com">
+          </label>
+
+          <label>
+            User Name
+            <input type="text" id="authUsername" placeholder="e.g., xenosadmin">
+          </label>
+
+          <label>
+            Password
+            <input type="password" id="authPassword" placeholder="Enter password">
+          </label>
+
+          <div id="auth-error" class="error-message"></div>
+          <button type="button" id="auth-submit-btn" class="btn-primary">Create Account</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboard-page" class="page">
+    <div class="dashboard-shell">
+      <div class="dashboard-header">
+        <div>
+          <h1>Your Websites</h1>
+          <p>Start a new project or continue any saved one.</p>
+        </div>
+        <div class="dashboard-actions">
+          <div class="my-id-box">
+            <span id="my-id-value">My ID: -</span>
+            <button type="button" id="copy-my-id-btn" class="btn-secondary">Copy</button>
+          </div>
+          <button type="button" id="marketplace-btn" class="btn-primary">🏪 Pro Marketplace</button>
+          <button type="button" id="contact-me-btn" class="btn-secondary">Contact Me</button>
+          <button type="button" id="new-project-btn" class="btn-primary">Create New Website</button>
+        </div>
+      </div>
+
+      <div id="upgrade-badge" class="upgrade-badge hidden">Current project upgraded</div>
+      <div id="projects-empty" class="dashboard-empty hidden">No saved websites yet. Create your first one.</div>
+      <div id="projects-grid" class="projects-grid"></div>
+    </div>
+  </section>
+
+  <section id="developer-page" class="page">
+    <div class="dashboard-shell">
+      <div class="dashboard-header">
+        <div>
+          <h1>Developer Admin</h1>
+          <p>View user accounts and manage each project manually.</p>
+        </div>
+        <button type="button" id="close-developer-btn" class="btn-secondary">Close Admin</button>
+      </div>
+
+      <div id="developer-users-empty" class="dashboard-empty hidden">No user accounts found yet.</div>
+      <div id="developer-users-grid" class="projects-grid"></div>
+      <div id="developer-projects-panel" class="dashboard-empty hidden">
+        <h3 id="developer-projects-title">User Projects</h3>
+        <div id="developer-projects-grid" class="projects-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- START PAGE -->
+  <section id="start-page" class="page">
+  <h1>Build your website in minutes</h1>
+  <p>Answer a few questions and download a ready-made website for your business or portfolio.</p>
+
+  <div id="template-choice">
+    <h2>Choose a template</h2>
+    <div class="template-cards">
+      <div class="template-card active" data-template="generic">
+        <h3>Business</h3>
+        <p>Perfect for shops, services, and small businesses.</p>
+      </div>
+      <div class="template-card" data-template="portfolio">
+        <h3>Portfolio</h3>
+        <p>Showcase your projects and testimonials.</p>
+      </div>
+    </div>
+  </div>
+
+  <button id="start-btn" class="btn-primary">Start Building</button>
+
+  <p class="hint">
+    Free preview. Download & premium features unlock after upgrade.
+  </p>
+</section>
+
+  <!-- QUESTION FLOW -->
+  <section id="form-page" class="page">
+    <form id="builder-form">
+      <!-- STEP 1: Basic Info -->
+      <div class="step active" data-step="1">
+        <h2>Step 1: Basic Info</h2>
+        <p id="step-label" class="step-label">Step 1 of 5</p>
+
+        <div class="template-select-wrapper">
+          <label>
+            Template type
+            <select id="templateType">
+              <option value="generic">Generic business</option>
+              <option value="portfolio">Portfolio</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Name / Brand
+          <input type="text" id="businessName" required>
+        </label>
+        <div id="businessName-error" class="error-message"></div>
+
+        <label>
+          What do you do?
+          <input type="text" id="businessType" placeholder="barber, food shop, clothing, developer...">
+        </label>
+
+        <label>
+          City / Area (optional)
+          <input type="text" id="businessLocation" placeholder="London, Peckham, Lagos...">
+        </label>
+
+        <label>
+          One-line tagline (optional)
+          <input type="text" id="businessTagline" placeholder="Clean cuts, fast delivery, full-stack dev...">
+        </label>
+
+        <button type="button" id="example-btn" class="btn-secondary">Try Example Portfolio</button>
+
+        <div class="nav-buttons">
+          <button type="button" id="next-1">Next</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Style -->
+      <div class="step" data-step="2">
+        <h2>Step 2: Style</h2>
+        <p class="step-label">Step 2 of 5</p>
+        <p>Select a style:</p>
+        <div class="style-options">
+          <label><input type="radio" name="style" value="modern" checked> Modern</label>
+          <label><input type="radio" name="style" value="dark"> Dark</label>
+          <label><input type="radio" name="style" value="bright"> Bright</label>
+          <label><input type="radio" name="style" value="scifi"> Sci-fi</label>
+          <label><input type="radio" name="style" value="minimal"> Minimal</label>
+        </div>
+
+        <div class="nav-buttons">
+          <button type="button" class="prev-btn" data-prev="1">Back</button>
+          <button type="button" id="next-2">Next</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Sections + Content -->
+      <div class="step" data-step="3">
+        <h2>Step 3: Sections & Content</h2>
+        <p class="step-label">Step 3 of 5</p>
+
+        <p>Select sections to include:</p>
+        <div class="sections-options">
+          <label><input type="checkbox" class="section-checkbox" value="about" checked> About</label>
+          <label><input type="checkbox" class="section-checkbox" value="products"> Products / Projects / Services</label>
+          <label><input type="checkbox" class="section-checkbox" value="gallery"> Gallery</label>
+          <label><input type="checkbox" class="section-checkbox" value="reviews"> Reviews / Testimonials</label>
+          <label><input type="checkbox" class="section-checkbox" value="contact" checked> Contact info</label>
+        </div>
+        <div id="sections-error" class="error-message"></div>
+
+        <!-- PROJECTS / SERVICES EDITOR -->
+        <div class="content-editor-group">
+          <h3>Projects / Services</h3>
+          <div class="two-column-editor">
+            <div class="editor-input-section">
+              <label>Project Name</label>
+              <input type="text" class="project-name-input" placeholder="e.g., Website redesign">
+              <label>For Who</label>
+              <input type="text" class="project-client-input" placeholder="e.g., Client Name">
+              <button type="button" class="btn-save-project btn-add">Save Project</button>
+            </div>
+            <div class="editor-output-section">
+              <label>All Projects</label>
+              <div id="projectsList" class="items-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TESTIMONIALS EDITOR -->
+        <div class="content-editor-group">
+          <h3>Testimonials</h3>
+          <div class="two-column-editor">
+            <div class="editor-input-section">
+              <label>From Who</label>
+              <input type="text" class="testimonial-from-input" placeholder="e.g., Client Name">
+              <label>What They Said</label>
+              <input type="text" class="testimonial-text-input" placeholder="e.g., Great work!">
+              <button type="button" class="btn-save-testimonial btn-add">Save Testimonial</button>
+            </div>
+            <div class="editor-output-section">
+              <label>All Testimonials</label>
+              <div id="testimonialsList" class="items-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-buttons">
+          <button type="button" class="prev-btn" data-prev="2">Back</button>
+          <button type="button" id="next-3">Next</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Contact -->
+      <div class="step" data-step="4">
+        <h2>Step 4: Contact Details</h2>
+        <p class="step-label">Step 4 of 5</p>
+
+        <label>
+          Phone number
+          <input type="text" id="phone">
+        </label>
+
+        <label>
+          WhatsApp number
+          <input type="text" id="whatsapp">
+        </label>
+
+        <label>
+          Instagram (optional)
+          <input type="text" id="instagram" placeholder="@yourhandle">
+        </label>
+
+        <label>
+          Email (optional)
+          <input type="email" id="email">
+        </label>
+
+        <label>
+          Address (optional)
+          <input type="text" id="address">
+        </label>
+
+        <p>Main action button:</p>
+        <div class="choice-options">
+          <label><input type="radio" name="primaryAction" value="whatsapp" checked> WhatsApp</label>
+          <label><input type="radio" name="primaryAction" value="call"> Call</label>
+          <label><input type="radio" name="primaryAction" value="instagram"> Instagram DM</label>
+        </div>
+
+        <div class="nav-buttons">
+          <button type="button" class="prev-btn" data-prev="3">Back</button>
+          <button type="button" id="next-4">Next</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Images -->
+      <div class="step" data-step="5">
+        <h2>Step 5: Images</h2>
+        <p class="step-label">Step 5 of 5</p>
+
+        <p>Do you want to set up image spots now, or add images later?</p>
+
+        <div class="choice-options">
+          <label>
+            <input type="radio" name="imageMode" value="later" id="imageModeLater" checked>
+            I will add images later
+          </label>
+          <label>
+            <input type="radio" name="imageMode" value="now" id="imageModeNow">
+            I want to set image boxes now
+          </label>
+        </div>
+
+        <div id="image-fields" class="image-fields hidden">
+          <p>Use filenames (hero.jpg) or full URLs (https://...)</p>
+
+          <label>
+            Hero image path (optional)
+            <input type="text" id="heroImagePath" placeholder="hero.jpg or https://...">
+          </label>
+
+          <label>
+            Gallery image paths (one per line, optional)
+            <textarea id="galleryImagesInput" rows="3" placeholder="cut1.jpg&#10;cut2.jpg&#10;cut3.jpg"></textarea>
+          </label>
+
+          <p class="hint">
+            How images work:
+            <br>
+            • If you type <code>hero.jpg</code>, put a file named <code>hero.jpg</code> in the same folder as <code>index.html</code> when you host your site.
+            <br>
+            • If you type <code>images/hero.jpg</code>, create an <code>images</code> folder next to <code>index.html</code> and put <code>hero.jpg</code> inside it.
+            <br>
+            • You can also paste full image URLs (like <code>https://example.com/pic.jpg</code>) and the site will load them from the internet.
+          </p>
+        </div>
+
+        <div class="nav-buttons">
+          <button type="button" class="prev-btn" data-prev="4">Back</button>
+          <button type="button" id="generate-btn">Next</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- LIVE PREVIEW -->
+    <div id="live-preview-wrapper">
+      <div id="step-progress">
+        <div id="step-progress-bar"></div>
+      </div>
+      <h2>Live Preview</h2>
+      <div id="live-preview"></div>
+      <p class="save-status" id="save-status"></p>
+    </div>
+  </section>
+
+  <!-- RESULT / PREVIEW PAGE -->
+  <section id="result-page" class="page">
+    <h2>Your Website Preview</h2>
+    <p id="success-message" class="success-message hidden">
+      Your site is ready. You can download the files or request a human upgrade.
+    </p>
+    <div id="preview-container"></div>
+
+    <!-- 💰 PAYWALL BOX -->
+    <div id="paywall-box" class="paywall-box">
+      <h3>Unlock your website</h3>
+      <p>Download files, remove branding, and unlock full features.</p>
+      <button id="upgrade-btn" class="btn-primary">
+        Upgrade (£5)
+      </button>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="result-actions">
+      <button id="download-btn" class="btn-primary">
+        Download Website (£1)
+      </button>
+
+      <button id="edit-btn" class="btn-secondary">
+        Edit Details
+      </button>
+
+      <button id="contact-creator-btn" class="btn-secondary">
+        Contact Me
+      </button>
+    </div>
+
+    <!-- 💰 HIGH-TICKET -->
+    <div class="upsell-box">
+      <h3>Help you create your own website</h3>
+      <p>I can help you design, edit, and launch your website.</p>
+      <button id="full-service-btn" class="btn-primary">
+        Full Setup (£20+)
+      </button>
+    </div>
+
+    <!-- 💰 HOSTING PLACEHOLDER -->
+    <div class="hosting-box">
+  <h4>Get domain & hosting</h4>
+  <p>Fast hosting for beginners</p>
+  <a id="hosting-link" class="btn-secondary" href="https://your-affiliate-link.com" target="_blank" rel="noopener noreferrer">
+    View Hosting Options
+  </a>
+</div>
+
+    <div id="download-status" class="status-message"></div>
+  </section>
+
+  <!-- 🏪 MARKETPLACE PAGE -->
+  <section id="marketplace-page" class="page hidden">
+    <div class="marketplace-container">
+      <h2>Pro Marketplace</h2>
+      <p class="marketplace-subtitle">Connect with other pro users, trade ideas, and grow your business</p>
+
+      <!-- Marketplace Tabs -->
+      <div class="marketplace-tabs">
+        <button class="tab-btn active" data-tab="requests">Help Requests</button>
+        <button class="tab-btn" data-tab="trader">Trader</button>
+        <button class="tab-btn" data-tab="auctions">Auctions</button>
+        <button class="tab-btn" data-tab="profile">My Profile</button>
+        <button class="tab-btn" data-tab="chat">Messages</button>
+        <button class="tab-btn" data-tab="admin">Admin</button>
+      </div>
+
+      <!-- Help Requests Tab -->
+      <div id="requests-tab" class="tab-content active">
+        <div class="tab-header">
+          <h3>Help Requests</h3>
+          <button id="create-request-btn" class="btn-primary">Create Request</button>
+        </div>
+
+        <div id="requests-list" class="items-grid">
+          <!-- Requests will be populated here -->
+        </div>
+      </div>
+
+      <!-- Trader Tab -->
+      <div id="trader-tab" class="tab-content">
+        <div class="tab-header">
+          <h3>Trade Ideas & Services</h3>
+          <button id="create-trade-btn" class="btn-primary">Create Trade</button>
+        </div>
+
+        <div id="trades-list" class="items-grid">
+          <!-- Trades will be populated here -->
+        </div>
+      </div>
+
+      <!-- Auctions Tab -->
+      <div id="auctions-tab" class="tab-content">
+        <div class="tab-header">
+          <h3>Auctions</h3>
+          <button id="create-auction-btn" class="btn-primary">Create Auction</button>
+        </div>
+
+        <div id="auctions-list" class="items-grid">
+          <!-- Auctions will be populated here -->
+        </div>
+      </div>
+
+      <!-- Profile Tab -->
+      <div id="profile-tab" class="tab-content">
+        <div class="profile-container">
+          <h3>My Profile</h3>
+          <form id="profile-form" class="profile-form">
+            <div class="form-group">
+              <label for="profile-bio">Bio:</label>
+              <textarea id="profile-bio" name="bio" rows="4" placeholder="Tell others about yourself..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="profile-gender">Gender:</label>
+              <select id="profile-gender" name="gender">
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer-not-to-say">Prefer not to say</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="profile-picture">Profile Picture URL:</label>
+              <input type="url" id="profile-picture" name="picture" placeholder="https://example.com/image.jpg">
+            </div>
+
+            <button type="submit" class="btn-primary">Update Profile</button>
+          </form>
+
+          <div class="blacklist-section">
+            <h4>Blacklist</h4>
+            <div id="blacklist-list" class="blacklist-list">
+              <!-- Blacklisted users will be shown here -->
+            </div>
+            <button id="add-to-blacklist-btn" class="btn-secondary">Add to Blacklist</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Tab -->
+      <div id="chat-tab" class="tab-content">
+        <div class="chat-container">
+          <div class="chat-sidebar">
+            <h4>Conversations</h4>
+            <div id="chat-list" class="chat-list">
+              <!-- Chat conversations will be listed here -->
+            </div>
+          </div>
+
+          <div class="chat-main">
+            <div id="chat-messages" class="chat-messages">
+              <div class="no-chat-selected">Select a conversation to start chatting</div>
+            </div>
+
+            <div class="chat-input-container">
+              <input type="text" id="chat-input" placeholder="Type your message..." disabled>
+              <button id="send-message-btn" class="btn-primary" disabled>Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tab -->
+      <div id="admin-tab" class="tab-content">
+        <div class="admin-container">
+          <h3>Developer Admin Panel</h3>
+
+          <div class="admin-section">
+            <h4>Ban Users</h4>
+            <div class="admin-form">
+              <input type="text" id="ban-user-input" placeholder="Enter username to ban">
+              <button id="ban-user-btn" class="btn-danger">Ban User</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Ban Products</h4>
+            <div class="admin-form">
+              <input type="text" id="ban-product-input" placeholder="Enter product ID to ban">
+              <button id="ban-product-btn" class="btn-danger">Ban Product</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Unban Users</h4>
+            <div class="admin-form">
+              <input type="text" id="unban-user-input" placeholder="Enter username to unban">
+              <button id="unban-user-btn" class="btn-success">Unban User</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Unban Products</h4>
+            <div class="admin-form">
+              <input type="text" id="unban-product-input" placeholder="Enter product ID to unban">
+              <button id="unban-product-btn" class="btn-success">Unban Product</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modals for creating items -->
+      <div id="create-request-modal" class="modal hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Create Help Request</h3>
+            <span class="modal-close">&times;</span>
+          </div>
+          <form id="create-request-form">
+            <div class="form-group">
+              <label for="request-title">Title:</label>
+              <input type="text" id="request-title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="request-description">Description:</label>
+              <textarea id="request-description" name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="request-budget">Budget (£):</label>
+              <input type="number" id="request-budget" name="budget" min="1" required>
+            </div>
+            <button type="submit" class="btn-primary">Create Request</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="create-trade-modal" class="modal hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Create Trade Offer</h3>
+            <span class="modal-close">&times;</span>
+          </div>
+          <form id="create-trade-form">
+            <div class="form-group">
+              <label for="trade-title">Title:</label>
+              <input type="text" id="trade-title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="trade-description">Description:</label>
+              <textarea id="trade-description" name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="trade-offer">What I'm offering:</label>
+              <textarea id="trade-offer" name="offering" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="trade-want">What I want in return:</label>
+              <textarea id="trade-want" name="wanting" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Create Trade</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="create-auction-modal" class="modal hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Create Auction</h3>
+            <span class="modal-close">&times;</span>
+          </div>
+          <form id="create-auction-form">
+            <div class="form-group">
+              <label for="auction-title">Title:</label>
+              <input type="text" id="auction-title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="auction-description">Description:</label>
+              <textarea id="auction-description" name="description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="auction-starting-price">Starting Price (£):</label>
+              <input type="number" id="auction-starting-price" name="startingPrice" min="0.01" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="auction-bid-type">Bid Type:</label>
+              <select id="auction-bid-type" name="bidType" required>
+                <option value="fixed">Fixed Price</option>
+                <option value="partial">Partial Bids Allowed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="auction-end-date">End Date:</label>
+              <input type="datetime-local" id="auction-end-date" name="endDate" required>
+            </div>
+            <button type="submit" class="btn-primary">Create Auction</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="add-blacklist-modal" class="modal hidden">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Add to Blacklist</h3>
+            <span class="modal-close">&times;</span>
+          </div>
+          <form id="add-blacklist-form">
+            <div class="form-group">
+              <label for="blacklist-username">Username:</label>
+              <input type="text" id="blacklist-username" name="username" required>
+            </div>
+            <button type="submit" class="btn-danger">Add to Blacklist</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPGRADE MODAL -->
+  <div id="upgrade-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Upgrade Required</h3>
+      <p>Send your request and the admin will upgrade this project after payment is confirmed.</p>
+      <button id="close-upgrade-btn" class="btn-primary">Close</button>
+    </div>
+  </div>
+
+  <!-- CONTACT MODAL -->
+  <div id="contact-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Contact Me</h3>
+      <p>Choose how you want to get help building your website.</p>
+      <button id="contact-whatsapp-btn" class="btn-primary">Contact Through WhatsApp</button>
+      <button id="contact-email-btn" class="btn-secondary">Contact Through Gmail</button>
+      <button id="close-modal-btn" class="btn-primary">Close</button>
+    </div>
+  </div>
+
+  <!-- Main JS module -->
+  <script type="module" src="script/main.js"></script>
+</body>
+</html>
