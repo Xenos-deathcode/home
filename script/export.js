@@ -123,7 +123,7 @@ body {
 }
 `.trim();
 
-export function canDownload() {
+function canDownload() {
   const project = getCurrentProject();
   return !!(project && project.paid);
 }

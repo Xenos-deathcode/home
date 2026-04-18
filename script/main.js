@@ -1,93 +1,5 @@
-import {
-  templateCards,
-  startBtn, previewContainer,
-  downloadBtn, editBtn, contactBtn,
-  downloadStatus, successMessage,
-  upgradeModal, closeUpgradeBtn,
-  contactModal, closeModalBtn,
-  next1, next2, next3, next4,
-  generateBtn, exampleBtn,
-  businessNameInput, businessTypeInput, businessLocationInput, businessTaglineInput,
-  businessNameError, sectionsError,
-  sectionCheckboxes,
-  phoneInput, whatsappInput, instagramInput, emailInput, addressInput,
-  heroImagePathInput, galleryImagesInput,
-  imageModeLaterRadio, imageModeNowRadio, imageFields,
-  templateTypeSelect, saveStatusEl,
-  fullServiceBtn, upgradeBtn, hostingBoxLink,
-  updateAnswersFromInputs, updateInputsFromAnswers,
-  updateLivePreviewDebounced, showPage, showStep,
-  applyTemplateDefaults,
-  renderProjectsList, renderTestimonialsList
-} from "./ui.js";
-
-import { SECTIONS, answers, resetAnswers } from "./state.js";
-import { handleDownload, canDownload } from "./export.js";
-import {
-  copyProjectToUser,
-  createProject,
-  deleteProject,
-  getCurrentProject,
-  listProjects,
-  loadAnswersFromStorage,
-  loadProject,
-  saveAnswersDebounced,
-  saveCurrentProject,
-  updateProject
-} from "./storage.js";
-import { generateSiteHtml } from "./generator.js";
-import {
-  clearDeveloperSession,
-  findUserByIdAndAccount,
-  getCurrentSession,
-  getCurrentUser,
-  getCurrentUserEmail,
-  getCurrentUserId,
-  isDeveloperSessionActive,
-  isLoggedIn,
-  listAllUsers,
-  logIn,
-  logOut,
-  signUp,
-  updateUserProfile,
-  addToBlacklist,
-  removeFromBlacklist,
-  banUser,
-  unbanUser,
-  deleteUser,
-  banUserProduct,
-  unbanUserProduct,
-  verifyCurrentUserPassword,
-  verifyDeveloperAccess,
-  isCurrentUserPro,
-  upgradeToPro,
-  upgradeUserToPro,
-  removeUserPro
-} from "./auth.js";
-
-import { showProfilePage } from "./profile.js";
-
-import {
-  createRequest,
-  getOpenRequests,
-  getAllRequests,
-  claimRequest,
-  completeRequest,
-  createAuction,
-  getAllAuctions,
-  placeBid,
-  endAuction,
-  createTradeOffer,
-  getMyTrades,
-  respondToTrade,
-  sendMessage,
-  getChatWithUser,
-  getMyChats,
-  markMessagesRead,
-  getProUsers,
-  getUserProfile,
-  canAccessMarketplace
-} from "./marketplace.js";
+// Main application logic - converted from ES6 modules for GitHub Pages compatibility
+// All functions are now global from the included script files
 
 const authAccountNameInput = document.getElementById("authAccountName");
 const authUsernameInput = document.getElementById("authUsername");
@@ -1778,16 +1690,6 @@ document.querySelectorAll(".modal-close, .modal .btn-primary").forEach(btn => {
   }
 });
 
-const createRequestBtn = document.getElementById("create-request-btn");
-const createRequestModal = document.getElementById("create-request-modal");
-const createRequestForm = document.getElementById("create-request-form");
-
-if (createRequestBtn && createRequestModal) {
-  createRequestBtn.addEventListener("click", () => {
-    createRequestModal.classList.remove("hidden");
-  });
-}
-
 if (createRequestForm) {
   createRequestForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -1803,16 +1705,6 @@ if (createRequestForm) {
     } else {
       window.alert("Failed to create request.");
     }
-  });
-}
-
-const createAuctionBtn = document.getElementById("create-auction-btn");
-const createAuctionModal = document.getElementById("create-auction-modal");
-const createAuctionForm = document.getElementById("create-auction-form");
-
-if (createAuctionBtn && createAuctionModal) {
-  createAuctionBtn.addEventListener("click", () => {
-    createAuctionModal.classList.remove("hidden");
   });
 }
 

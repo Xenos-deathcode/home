@@ -5,7 +5,7 @@ import { updateInputsFromAnswers, updateLivePreviewDebounced } from "./ui.js";
 const PROJECTS_KEY = "smart_builder_projects_v2";
 const CURRENT_PROJECT_KEY = "smart_builder_current_project_v2";
 
-export function readUserJson(key, fallback, userId = getCurrentUserId()) {
+function readUserJson(key, fallback, userId = getCurrentUserId()) {
   try {
     const storageKey = getUserScopedStorageKey(key, userId || "");
     const raw = localStorage.getItem(storageKey);
@@ -16,12 +16,12 @@ export function readUserJson(key, fallback, userId = getCurrentUserId()) {
   }
 }
 
-export function writeUserJson(key, value, userId = getCurrentUserId()) {
+function writeUserJson(key, value, userId = getCurrentUserId()) {
   const storageKey = getUserScopedStorageKey(key, userId || "");
   localStorage.setItem(storageKey, JSON.stringify(value));
 }
 
-export function readGlobalJson(key, fallback) {
+function readGlobalJson(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
@@ -31,7 +31,7 @@ export function readGlobalJson(key, fallback) {
   }
 }
 
-export function writeGlobalJson(key, value) {
+function writeGlobalJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
@@ -66,7 +66,7 @@ function createProjectRecord(ownerUserId, name = "Untitled website") {
   };
 }
 
-export function listProjects(userId = getCurrentUserId()) {
+function listProjects(userId = getCurrentUserId()) {
   const projects = readUserJson(PROJECTS_KEY, [], userId);
   return projects.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
 }
@@ -75,11 +75,11 @@ function writeProjects(projects, userId = getCurrentUserId()) {
   writeUserJson(PROJECTS_KEY, projects, userId);
 }
 
-export function getCurrentProjectId(userId = getCurrentUserId()) {
+function getCurrentProjectId(userId = getCurrentUserId()) {
   return localStorage.getItem(getUserScopedStorageKey(CURRENT_PROJECT_KEY, userId));
 }
 
-export function setCurrentProjectId(projectId, userId = getCurrentUserId()) {
+function setCurrentProjectId(projectId, userId = getCurrentUserId()) {
   const key = getUserScopedStorageKey(CURRENT_PROJECT_KEY, userId);
   if (!projectId) {
     localStorage.removeItem(key);
@@ -89,13 +89,13 @@ export function setCurrentProjectId(projectId, userId = getCurrentUserId()) {
   localStorage.setItem(key, projectId);
 }
 
-export function getCurrentProject(userId = getCurrentUserId()) {
+function getCurrentProject(userId = getCurrentUserId()) {
   const projectId = getCurrentProjectId(userId);
   if (!projectId) return null;
   return listProjects(userId).find(project => project.id === projectId) || null;
 }
 
-export function createProject(name = "Untitled website", userId = getCurrentUserId()) {
+function createProject(name = "Untitled website", userId = getCurrentUserId()) {
   const projects = listProjects(userId);
   const project = createProjectRecord(userId, name);
   projects.unshift(project);
@@ -104,7 +104,7 @@ export function createProject(name = "Untitled website", userId = getCurrentUser
   return project;
 }
 
-export function saveCurrentProject(saveStatusEl) {
+function saveCurrentProject(saveStatusEl) {
   const userId = getCurrentUserId();
   const projectId = getCurrentProjectId(userId);
   if (!projectId) return null;
@@ -127,7 +127,7 @@ export function saveCurrentProject(saveStatusEl) {
   return projects[projectIndex];
 }
 
-export function saveAnswersDebounced(saveStatusEl) {
+function saveAnswersDebounced(saveStatusEl) {
   let timeoutId;
   return function innerSave() {
     clearTimeout(timeoutId);
@@ -142,7 +142,7 @@ export function saveAnswersDebounced(saveStatusEl) {
   };
 }
 
-export function loadProject(projectId, userId = getCurrentUserId()) {
+function loadProject(projectId, userId = getCurrentUserId()) {
   const project = listProjects(userId).find(item => item.id === projectId);
   if (!project) return null;
 
@@ -153,7 +153,7 @@ export function loadProject(projectId, userId = getCurrentUserId()) {
   return project;
 }
 
-export function updateProject(projectId, updates, userId = getCurrentUserId()) {
+function updateProject(projectId, updates, userId = getCurrentUserId()) {
   const projects = listProjects(userId);
   const index = projects.findIndex(project => project.id === projectId);
   if (index < 0) return null;
@@ -168,7 +168,7 @@ export function updateProject(projectId, updates, userId = getCurrentUserId()) {
   return projects[index];
 }
 
-export function deleteProject(projectId, userId = getCurrentUserId()) {
+function deleteProject(projectId, userId = getCurrentUserId()) {
   const projects = listProjects(userId);
   const project = projects.find(item => item.id === projectId);
   if (!project || project.downloaded) return false;
@@ -180,19 +180,19 @@ export function deleteProject(projectId, userId = getCurrentUserId()) {
   return true;
 }
 
-export function markCurrentProjectPaid() {
+function markCurrentProjectPaid() {
   const project = getCurrentProject();
   if (!project) return null;
   return updateProject(project.id, { paid: true });
 }
 
-export function markCurrentProjectDownloaded() {
+function markCurrentProjectDownloaded() {
   const project = getCurrentProject();
   if (!project) return null;
   return updateProject(project.id, { downloaded: true, paid: true });
 }
 
-export function copyProjectToUser(project, targetUserId) {
+function copyProjectToUser(project, targetUserId) {
   const targetProjects = listProjects(targetUserId);
   const now = new Date().toISOString();
   const copiedProject = {
@@ -210,7 +210,7 @@ export function copyProjectToUser(project, targetUserId) {
   return copiedProject;
 }
 
-export function loadAnswersFromStorage() {
+function loadAnswersFromStorage() {
   const userId = getCurrentUserId();
   const legacy = readUserJson(STORAGE_KEY, null, userId);
   if (!legacy || legacy.version !== 2 || !legacy.data) return;

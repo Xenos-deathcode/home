@@ -1,6 +1,6 @@
 import { SECTIONS, isPortfolio } from "./state.js";
 
-export function escapeHtml(str) {
+function escapeHtml(str) {
   if (!str) return "";
   return str
     .replace(/&/g, "&amp;")
@@ -295,7 +295,7 @@ function renderPrimaryCta(data) {
   return `<a class="cta-btn" href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 }
 
-export function generateSiteHtml(data) {
+function generateSiteHtml(data) {
   const themeClass = getThemeClass(data.style);
   const businessName = data.businessName || "My Site";
   const tagline = generateDefaultTagline(data);
@@ -325,7 +325,7 @@ export function generateSiteHtml(data) {
   `;
 }
 
-export function generateFullHtmlDocument(data) {
+function generateFullHtmlDocument(data) {
   const bodyContent = generateSiteHtml(data);
   return `
 <!DOCTYPE html>

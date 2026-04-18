@@ -12,7 +12,7 @@ const MARKETPLACE_CHATS_KEY = "marketplace_chats_v1";
 
 // ========== REQUESTS SYSTEM ==========
 
-export function createRequest(title, description, budget) {
+function createRequest(title, description, budget) {
   const userId = getCurrentUserId();
   if (!userId) return null;
 
@@ -34,15 +34,15 @@ export function createRequest(title, description, budget) {
   return request;
 }
 
-export function getAllRequests() {
+function getAllRequests() {
   return readGlobalJson(MARKETPLACE_REQUESTS_KEY, []);
 }
 
-export function getOpenRequests() {
+function getOpenRequests() {
   return getAllRequests().filter(r => r.status === "open");
 }
 
-export function claimRequest(requestId) {
+function claimRequest(requestId) {
   if (!isCurrentUserPro()) return false;
 
   const userId = getCurrentUserId();
@@ -58,7 +58,7 @@ export function claimRequest(requestId) {
   return false;
 }
 
-export function completeRequest(requestId) {
+function completeRequest(requestId) {
   const userId = getCurrentUserId();
   const requests = getAllRequests();
   const requestIndex = requests.findIndex(r => r.id === requestId && r.helperId === userId);
@@ -74,7 +74,7 @@ export function completeRequest(requestId) {
 
 // ========== AUCTION SYSTEM ==========
 
-export function createAuction(title, description, startingPrice, bidType, endsAt, minIncrement = 0.10) {
+function createAuction(title, description, startingPrice, bidType, endsAt, minIncrement = 0.10) {
   const userId = getCurrentUserId();
   if (!userId) return null;
 
@@ -100,11 +100,11 @@ export function createAuction(title, description, startingPrice, bidType, endsAt
   return auction;
 }
 
-export function getAllAuctions() {
+function getAllAuctions() {
   return readGlobalJson(MARKETPLACE_AUCTIONS_KEY, []);
 }
 
-export function placeBid(auctionId, bidAmount) {
+function placeBid(auctionId, bidAmount) {
   const userId = getCurrentUserId();
   if (!userId) return false;
 
@@ -140,7 +140,7 @@ export function placeBid(auctionId, bidAmount) {
   return true;
 }
 
-export function endAuction(auctionId) {
+function endAuction(auctionId) {
   const auctions = getAllAuctions();
   const auctionIndex = auctions.findIndex(a => a.id === auctionId);
 
@@ -161,7 +161,7 @@ export function endAuction(auctionId) {
 
 // ========== TRADING SYSTEM ==========
 
-export function createTradeOffer(targetUserId, title, description, offering, wanting) {
+function createTradeOffer(targetUserId, title, description, offering, wanting) {
   const userId = getCurrentUserId();
   if (!userId) return null;
 
@@ -183,13 +183,13 @@ export function createTradeOffer(targetUserId, title, description, offering, wan
   return trade;
 }
 
-export function getMyTrades() {
+function getMyTrades() {
   const userId = getCurrentUserId();
   const trades = readGlobalJson(MARKETPLACE_TRADES_KEY, []);
   return trades.filter(t => t.initiatorId === userId || t.targetUserId === userId);
 }
 
-export function respondToTrade(tradeId, accept) {
+function respondToTrade(tradeId, accept) {
   const userId = getCurrentUserId();
   const trades = readGlobalJson(MARKETPLACE_TRADES_KEY, []);
   const tradeIndex = trades.findIndex(t => t.id === tradeId && t.targetUserId === userId);
@@ -204,7 +204,7 @@ export function respondToTrade(tradeId, accept) {
 
 // ========== CHAT SYSTEM ==========
 
-export function sendMessage(recipientId, message) {
+function sendMessage(recipientId, message) {
   const userId = getCurrentUserId();
   if (!userId) return null;
 
@@ -232,7 +232,7 @@ export function sendMessage(recipientId, message) {
   return chatMessage;
 }
 
-export function getChatWithUser(otherUserId) {
+function getChatWithUser(otherUserId) {
   const userId = getCurrentUserId();
   const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const chatKey = [userId, otherUserId].sort().join("_");
@@ -240,7 +240,7 @@ export function getChatWithUser(otherUserId) {
   return chats[chatKey] || { participants: [userId, otherUserId], messages: [] };
 }
 
-export function getMyChats() {
+function getMyChats() {
   const userId = getCurrentUserId();
   const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const myChats = [];
@@ -254,7 +254,7 @@ export function getMyChats() {
   return myChats;
 }
 
-export function markMessagesRead(otherUserId) {
+function markMessagesRead(otherUserId) {
   const userId = getCurrentUserId();
   const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const chatKey = [userId, otherUserId].sort().join("_");
@@ -271,26 +271,26 @@ export function markMessagesRead(otherUserId) {
 
 // ========== UTILITY FUNCTIONS ==========
 
-export function getProUsers() {
+function getProUsers() {
   const users = readUsers();
   return Object.values(users).filter(u => u.isPro && !u.banned);
 }
 
-export function getUserProfile(userId) {
+function getUserProfile(userId) {
   const users = readUsers();
   return Object.values(users).find(u => u.userId === userId);
 }
 
-export function canAccessMarketplace() {
+function canAccessMarketplace() {
   return isCurrentUserPro();
 }
 
-export function isUserBlacklistedByMe(userId) {
+function isUserBlacklistedByMe(userId) {
   const user = getCurrentUser();
   return user && user.blacklist && user.blacklist.includes(userId);
 }
 
-export function isUserBanned(userId) {
+function isUserBanned(userId) {
   const user = getUserProfile(userId);
   return user && user.banned;
 }

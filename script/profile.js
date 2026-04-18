@@ -12,7 +12,7 @@ import { showPage } from "./ui.js";
 
 const PROFILE_KEY = "user_profile_v1";
 
-export function showProfilePage() {
+function showProfilePage() {
   const currentUser = getCurrentUser();
   if (!currentUser) {
     alert("You must be logged in to view your profile");
@@ -23,7 +23,7 @@ export function showProfilePage() {
   renderProfileContent();
 }
 
-export function renderProfileContent() {
+function renderProfileContent() {
   const currentUser = getCurrentUser();
   if (!currentUser) return;
 

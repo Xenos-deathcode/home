@@ -12,7 +12,7 @@ function toSlug(value) {
   return base || "user";
 }
 
-export function readUsers() {
+function readUsers() {
   try {
     const raw = localStorage.getItem(USERS_KEY);
     return raw ? JSON.parse(raw) : {};
@@ -22,7 +22,7 @@ export function readUsers() {
   }
 }
 
-export function writeUsers(users) {
+function writeUsers(users) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
@@ -60,7 +60,7 @@ function updateUser(accountName, username, updater) {
   return nextUser;
 }
 
-export function getCurrentSession() {
+function getCurrentSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
@@ -70,11 +70,11 @@ export function getCurrentSession() {
   }
 }
 
-export function isLoggedIn() {
+function isLoggedIn() {
   return !!getCurrentSession();
 }
 
-export function signUp(accountName, username, password) {
+function signUp(accountName, username, password) {
   const users = readUsers();
   const key = getUserKey(accountName, username);
 
@@ -109,7 +109,7 @@ export function signUp(accountName, username, password) {
   return { ok: true, session };
 }
 
-export function logIn(accountName, username, password) {
+function logIn(accountName, username, password) {
   const users = readUsers();
   const key = getUserKey(accountName, username);
   const user = users[key];
@@ -123,30 +123,30 @@ export function logIn(accountName, username, password) {
   return { ok: true, session };
 }
 
-export function logOut() {
+function logOut() {
   localStorage.removeItem(SESSION_KEY);
 }
 
-export function getCurrentUser() {
+function getCurrentUser() {
   return getUserBySession(getCurrentSession());
 }
 
-export function getCurrentUserId() {
+function getCurrentUserId() {
   const user = getCurrentUser();
   return user && user.userId ? String(user.userId) : "";
 }
 
-export function getCurrentUserEmail() {
+function getCurrentUserEmail() {
   const user = getCurrentUser();
   return user && user.email ? String(user.email) : "";
 }
 
-export function isCurrentUserPro() {
+function isCurrentUserPro() {
   const user = getCurrentUser();
   return !!(user && user.isPro);
 }
 
-export function upgradeToPro() {
+function upgradeToPro() {
   const user = getCurrentUser();
   if (!user) return false;
 
@@ -161,7 +161,7 @@ export function upgradeToPro() {
   return false;
 }
 
-export function updateUserProfile(updates) {
+function updateUserProfile(updates) {
   const user = getCurrentUser();
   if (!user) return false;
 
@@ -175,7 +175,7 @@ export function updateUserProfile(updates) {
   return false;
 }
 
-export function addToBlacklist(targetUserId) {
+function addToBlacklist(targetUserId) {
   const user = getCurrentUser();
   if (!user) return false;
 
@@ -189,7 +189,7 @@ export function addToBlacklist(targetUserId) {
   return false;
 }
 
-export function removeFromBlacklist(targetUserId) {
+function removeFromBlacklist(targetUserId) {
   const user = getCurrentUser();
   if (!user) return false;
 
@@ -203,12 +203,12 @@ export function removeFromBlacklist(targetUserId) {
   return false;
 }
 
-export function getBlacklist() {
+function getBlacklist() {
   const user = getCurrentUser();
   return user ? user.blacklist || [] : [];
 }
 
-export function banUser(targetUserId) {
+function banUser(targetUserId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {
@@ -220,7 +220,7 @@ export function banUser(targetUserId) {
   return false;
 }
 
-export function unbanUser(targetUserId) {
+function unbanUser(targetUserId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {
@@ -232,7 +232,7 @@ export function unbanUser(targetUserId) {
   return false;
 }
 
-export function banUserProduct(targetUserId, productId) {
+function banUserProduct(targetUserId, productId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {
@@ -247,7 +247,7 @@ export function banUserProduct(targetUserId, productId) {
   return false;
 }
 
-export function unbanUserProduct(targetUserId, productId) {
+function unbanUserProduct(targetUserId, productId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {
@@ -261,12 +261,12 @@ export function unbanUserProduct(targetUserId, productId) {
   return false;
 }
 
-export function verifyCurrentUserPassword(password) {
+function verifyCurrentUserPassword(password) {
   const user = getCurrentUser();
   return !!(user && user.password === password.trim());
 }
 
-export function listAllUsers() {
+function listAllUsers() {
   return Object.values(readUsers()).sort((a, b) => {
     const aTime = a.createdAt || "";
     const bTime = b.createdAt || "";
@@ -274,7 +274,7 @@ export function listAllUsers() {
   });
 }
 
-export function findUserByIdAndAccount(userId, accountName) {
+function findUserByIdAndAccount(userId, accountName) {
   const users = Object.values(readUsers());
   const normalizedId = normalize(userId);
   const normalizedAccount = normalize(accountName);
@@ -284,7 +284,7 @@ export function findUserByIdAndAccount(userId, accountName) {
   ) || null;
 }
 
-export function verifyDeveloperAccess(code) {
+function verifyDeveloperAccess(code) {
   const valid = code.trim() === DEV_ACCESS_CODE;
   if (valid) {
     sessionStorage.setItem(DEV_SESSION_KEY, "1");
@@ -292,21 +292,21 @@ export function verifyDeveloperAccess(code) {
   return valid;
 }
 
-export function isDeveloperSessionActive() {
+function isDeveloperSessionActive() {
   return sessionStorage.getItem(DEV_SESSION_KEY) === "1";
 }
 
-export function clearDeveloperSession() {
+function clearDeveloperSession() {
   sessionStorage.removeItem(DEV_SESSION_KEY);
 }
 
-export function getUserScopedStorageKey(baseKey, userId) {
+function getUserScopedStorageKey(baseKey, userId) {
   const normalizedUserId = normalize(userId || getCurrentUserId());
   if (!normalizedUserId) return baseKey;
   return `${baseKey}_${normalizedUserId}`;
 }
 
-export function upgradeUserToPro(targetUserId) {
+function upgradeUserToPro(targetUserId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {
@@ -319,7 +319,7 @@ export function upgradeUserToPro(targetUserId) {
   return false;
 }
 
-export function removeUserPro(targetUserId) {
+function removeUserPro(targetUserId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {

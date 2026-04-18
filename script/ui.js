@@ -1,84 +1,84 @@
 import { TOTAL_STEPS, SECTIONS, answers } from "./state.js";
 import { generateSiteHtml } from "./generator.js";
 
-export const startPage = document.getElementById("start-page");
-export const formPage = document.getElementById("form-page");
-export const resultPage = document.getElementById("result-page");
-export const authPage = document.getElementById("auth-page");
-export const dashboardPage = document.getElementById("dashboard-page");
-export const developerPage = document.getElementById("developer-page");
-export const marketplacePage = document.getElementById("marketplace-page");
-export const profilePage = document.getElementById("profile-page");
+const startPage = document.getElementById("start-page");
+const formPage = document.getElementById("form-page");
+const resultPage = document.getElementById("result-page");
+const authPage = document.getElementById("auth-page");
+const dashboardPage = document.getElementById("dashboard-page");
+const developerPage = document.getElementById("developer-page");
+const marketplacePage = document.getElementById("marketplace-page");
+const profilePage = document.getElementById("profile-page");
 
-export const templateCards = document.querySelectorAll(".template-card");
+const templateCards = document.querySelectorAll(".template-card");
 
-export const startBtn = document.getElementById("start-btn");
-export const previewContainer = document.getElementById("preview-container");
-export const livePreview = document.getElementById("live-preview");
+const startBtn = document.getElementById("start-btn");
+const previewContainer = document.getElementById("preview-container");
+const livePreview = document.getElementById("live-preview");
 
-export const downloadBtn = document.getElementById("download-btn");
-export const editBtn = document.getElementById("edit-btn");
-export const contactBtn = document.getElementById("contact-creator-btn");
-export const downloadStatus = document.getElementById("download-status");
-export const successMessage = document.getElementById("success-message");
+const downloadBtn = document.getElementById("download-btn");
+const editBtn = document.getElementById("edit-btn");
+const contactBtn = document.getElementById("contact-creator-btn");
+const downloadStatus = document.getElementById("download-status");
+const successMessage = document.getElementById("success-message");
 
-export const upgradeModal = document.getElementById("upgrade-modal");
-export const closeUpgradeBtn = document.getElementById("close-upgrade-btn");
+const upgradeModal = document.getElementById("upgrade-modal");
+const closeUpgradeBtn = document.getElementById("close-upgrade-btn");
 
-export const contactModal = document.getElementById("contact-modal");
-export const closeModalBtn = document.getElementById("close-modal-btn");
+const contactModal = document.getElementById("contact-modal");
+const closeModalBtn = document.getElementById("close-modal-btn");
 
-export const steps = document.querySelectorAll(".step");
-export const next1 = document.getElementById("next-1");
-export const next2 = document.getElementById("next-2");
-export const next3 = document.getElementById("next-3");
-export const next4 = document.getElementById("next-4");
-export const generateBtn = document.getElementById("generate-btn");
-export const exampleBtn = document.getElementById("example-btn");
+const steps = document.querySelectorAll(".step");
+const next1 = document.getElementById("next-1");
+const next2 = document.getElementById("next-2");
+const next3 = document.getElementById("next-3");
+const next4 = document.getElementById("next-4");
+const generateBtn = document.getElementById("generate-btn");
+const exampleBtn = document.getElementById("example-btn");
 
-export const businessNameInput = document.getElementById("businessName");
-export const businessTypeInput = document.getElementById("businessType");
-export const businessLocationInput = document.getElementById("businessLocation");
-export const businessTaglineInput = document.getElementById("businessTagline");
+const businessNameInput = document.getElementById("businessName");
+const businessTypeInput = document.getElementById("businessType");
+const businessLocationInput = document.getElementById("businessLocation");
+const businessTaglineInput = document.getElementById("businessTagline");
 
-export const businessNameError = document.getElementById("businessName-error");
-export const sectionsError = document.getElementById("sections-error");
+const businessNameError = document.getElementById("businessName-error");
+const sectionsError = document.getElementById("sections-error");
 
-export const sectionCheckboxes = document.querySelectorAll(".section-checkbox");
+const sectionCheckboxes = document.querySelectorAll(".section-checkbox");
 
-export const phoneInput = document.getElementById("phone");
-export const whatsappInput = document.getElementById("whatsapp");
-export const instagramInput = document.getElementById("instagram");
-export const emailInput = document.getElementById("email");
-export const addressInput = document.getElementById("address");
+const phoneInput = document.getElementById("phone");
+const whatsappInput = document.getElementById("whatsapp");
+const instagramInput = document.getElementById("instagram");
+const emailInput = document.getElementById("email");
+const addressInput = document.getElementById("address");
 
-export const heroImagePathInput = document.getElementById("heroImagePath");
-export const galleryImagesInput = document.getElementById("galleryImagesInput");
-export const imageModeLaterRadio = document.getElementById("imageModeLater");
-export const imageModeNowRadio = document.getElementById("imageModeNow");
-export const imageFields = document.getElementById("image-fields");
+const heroImagePathInput = document.getElementById("heroImagePath");
+const galleryImagesInput = document.getElementById("galleryImagesInput");
+const imageModeLaterRadio = document.getElementById("imageModeLater");
+const imageModeNowRadio = document.getElementById("imageModeNow");
+const imageFields = document.getElementById("image-fields");
 
-export const stepProgressBar = document.getElementById("step-progress-bar");
-export const stepLabel = document.getElementById("step-label");
-export const templateTypeSelect = document.getElementById("templateType");
-export const saveStatusEl = document.getElementById("save-status");
+const stepProgressBar = document.getElementById("step-progress-bar");
+const stepLabel = document.getElementById("step-label");
+const templateTypeSelect = document.getElementById("templateType");
+const saveStatusEl = document.getElementById("save-status");
 
-export const fullServiceBtn = document.getElementById("full-service-btn");
-export const upgradeBtn = document.getElementById("upgrade-btn");
-export const hostingBoxLink = document.getElementById("hosting-link");
+const fullServiceBtn = document.getElementById("full-service-btn");
+const upgradeBtn = document.getElementById("upgrade-btn");
+const hostingBoxLink = document.getElementById("hosting-link");
 
 let previewTimeout;
 
 // helpers
 
-export function showStep(stepNumber) {
+function showStep(stepNumber) {
   steps.forEach(step => {
     step.classList.toggle("active", step.dataset.step === String(stepNumber));
   });
   updateStepProgress(stepNumber);
 }
 
-export function showPage(pageId) {
+function showPage(pageId) {
   [authPage, dashboardPage, developerPage, marketplacePage, profilePage, startPage, formPage, resultPage].forEach(p => {
     if (p) p.classList.remove("active");
   });
@@ -86,7 +86,7 @@ export function showPage(pageId) {
   if (page) page.classList.add("active");
 }
 
-export function updateStepProgress(step) {
+function updateStepProgress(step) {
   const percent = (step / TOTAL_STEPS) * 100;
   if (stepProgressBar) stepProgressBar.style.width = `${percent}%`;
   if (stepLabel) stepLabel.textContent = `Step ${step} of ${TOTAL_STEPS}`;
@@ -104,7 +104,7 @@ function parseLines(str) {
 
 // ========== PROJECT & TESTIMONIAL RENDERING ==========
 
-export function renderProjectsList() {
+function renderProjectsList() {
   const projectsList = document.getElementById("projectsList");
   if (!projectsList) return;
 
@@ -137,7 +137,7 @@ export function renderProjectsList() {
   });
 }
 
-export function renderTestimonialsList() {
+function renderTestimonialsList() {
   const testimonialsList = document.getElementById("testimonialsList");
   if (!testimonialsList) return;
 
@@ -176,7 +176,7 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-export function updateAnswersFromInputs() {
+function updateAnswersFromInputs() {
   answers.businessName = businessNameInput.value.trim();
   answers.businessType = businessTypeInput.value.trim();
   answers.businessLocation = businessLocationInput.value.trim();
@@ -209,7 +209,7 @@ export function updateAnswersFromInputs() {
   answers.galleryImages = parseLines(galleryImagesInput.value);
 }
 
-export function updateInputsFromAnswers() {
+function updateInputsFromAnswers() {
   businessNameInput.value = answers.businessName;
   businessTypeInput.value = answers.businessType;
   businessLocationInput.value = answers.businessLocation;
@@ -273,7 +273,7 @@ export function updateInputsFromAnswers() {
   });
 }
 
-export function updateLivePreviewDebounced() {
+function updateLivePreviewDebounced() {
   clearTimeout(previewTimeout);
   previewTimeout = setTimeout(() => {
     updateAnswersFromInputs();
@@ -284,7 +284,7 @@ export function updateLivePreviewDebounced() {
 
 // template defaults
 
-export function applyTemplateDefaults() {
+function applyTemplateDefaults() {
   if (!templateTypeSelect) return;
   const template = templateTypeSelect.value;
 
