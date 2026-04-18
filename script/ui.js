@@ -8,6 +8,7 @@ export const authPage = document.getElementById("auth-page");
 export const dashboardPage = document.getElementById("dashboard-page");
 export const developerPage = document.getElementById("developer-page");
 export const marketplacePage = document.getElementById("marketplace-page");
+export const profilePage = document.getElementById("profile-page");
 
 export const templateCards = document.querySelectorAll(".template-card");
 
@@ -78,7 +79,7 @@ export function showStep(stepNumber) {
 }
 
 export function showPage(pageId) {
-  [authPage, dashboardPage, developerPage, marketplacePage, startPage, formPage, resultPage].forEach(p => {
+  [authPage, dashboardPage, developerPage, marketplacePage, profilePage, startPage, formPage, resultPage].forEach(p => {
     if (p) p.classList.remove("active");
   });
   const page = document.getElementById(pageId);

@@ -63,6 +63,8 @@ import {
   upgradeToPro
 } from "./auth.js";
 
+import { showProfilePage } from "./profile.js";
+
 import {
   createRequest,
   getOpenRequests,
@@ -94,6 +96,7 @@ const showLoginBtn = document.getElementById("show-login-btn");
 const accountBar = document.getElementById("account-bar");
 const accountDisplay = document.getElementById("account-display");
 const dashboardBtn = document.getElementById("dashboard-btn");
+const profileBtn = document.getElementById("profile-btn");
 const logoutBtn = document.getElementById("logout-btn");
 const newProjectBtn = document.getElementById("new-project-btn");
 const projectsGrid = document.getElementById("projects-grid");
@@ -1021,6 +1024,13 @@ if (marketplaceBtn) {
       return;
     }
     openMarketplace();
+  });
+}
+
+if (profileBtn) {
+  profileBtn.addEventListener("click", () => {
+    if (!isLoggedIn()) return;
+    showProfilePage();
   });
 }
 
