@@ -60,7 +60,9 @@ import {
   verifyCurrentUserPassword,
   verifyDeveloperAccess,
   isCurrentUserPro,
-  upgradeToPro
+  upgradeToPro,
+  upgradeUserToPro,
+  removeUserPro
 } from "./auth.js";
 
 import { showProfilePage } from "./profile.js";
@@ -68,6 +70,7 @@ import { showProfilePage } from "./profile.js";
 import {
   createRequest,
   getOpenRequests,
+  getAllRequests,
   claimRequest,
   completeRequest,
   createAuction,
@@ -587,6 +590,611 @@ function openMarketplace() {
   showPage("marketplace-page");
 }
 
+function renderMarketplace() {
+  const tabButtons = document.querySelectorAll(".marketplace-tabs .tab-btn");
+  const tabContents = document.querySelectorAll(".marketplace-container .tab-content");
+
+  // Hide all tabs
+  tabContents.forEach(tab => tab.classList.remove("active"));
+  tabButtons.forEach(btn => btn.classList.remove("active"));
+
+  // Show requests tab by default
+  const requestsTab = document.getElementById("requests-tab");
+  if (requestsTab) {
+    requestsTab.classList.add("active");
+    const firstBtn = tabButtons[0];
+    if (firstBtn) firstBtn.classList.add("active");
+  }
+
+  // Setup tab switching
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tabName = btn.getAttribute("data-tab");
+      tabButtons.forEach(b => b.classList.remove("active"));
+      tabContents.forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+
+      const targetTab = document.getElementById(`${tabName}-tab`);
+      if (targetTab) {
+        targetTab.classList.add("active");
+        
+        // Render content for each tab
+        if (tabName === "requests") renderRequestsTab();
+        else if (tabName === "trader") renderTraderTab();
+        else if (tabName === "auctions") renderAuctionsTab();
+        else if (tabName === "profile") renderProfileTabContent();
+        else if (tabName === "chat") renderChatTabContent();
+        else if (tabName === "admin") renderAdminTabContent();
+      }
+    });
+  });
+
+  // Initial render
+  renderRequestsTab();
+}
+
+function renderRequestsTab() {
+  const requestsList = document.getElementById("requests-list");
+  if (!requestsList) return;
+
+  const currentUser = getCurrentUser();
+  const allRequests = getOpenRequests() || [];
+  
+  // Filter: exclude blacklisted users' requests and banned users
+  const visibleRequests = allRequests.filter(req => {
+    const requester = getUserProfile(req.userId);
+    if (!requester || requester.banned) return false;
+    if (currentUser && currentUser.blacklist && currentUser.blacklist.includes(req.userId)) return false;
+    return true;
+  });
+
+  if (visibleRequests.length === 0) {
+    requestsList.innerHTML = `<p class="empty-state">No help requests available right now.</p>`;
+    return;
+  }
+
+  requestsList.innerHTML = visibleRequests.map(req => {
+    const requester = getUserProfile(req.userId);
+    const isClaimed = req.status === "in_progress";
+    const isMyRequest = req.userId === getCurrentUserId();
+
+    return `
+      <div class="item-card request-card">
+        <h4>${req.title || "Untitled"}</h4>
+        <p class="description">${req.description || ""}</p>
+        <div class="meta">
+          <span class="budget">Budget: £${req.budget || 0}</span>
+          <span class="status">${isClaimed ? "In Progress" : "Open"}</span>
+          <span class="requester">by ${requester?.username || "Unknown"}</span>
+        </div>
+        ${!isMyRequest && !isClaimed ? `
+          <button class="btn-primary claim-request-btn" data-request-id="${req.id}">Claim Request</button>
+        ` : ""}
+        ${isMyRequest ? `
+          <p class="my-request-badge">Your request</p>
+        ` : ""}
+      </div>
+    `;
+  }).join("");
+
+  // Wire claim buttons
+  document.querySelectorAll(".claim-request-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const requestId = btn.getAttribute("data-request-id");
+      if (claimRequest(requestId)) {
+        window.alert("Request claimed! You can now work on it.");
+        renderRequestsTab();
+      } else {
+        window.alert("Failed to claim request.");
+      }
+    });
+  });
+}
+
+function renderTraderTab() {
+  const tradesList = document.getElementById("trades-list");
+  if (!tradesList) return;
+
+  const proUsers = getProUsers() || [];
+  const currentUser = getCurrentUser();
+  
+  // Filter: exclude blacklisted and self
+  const otherProUsers = proUsers.filter(u => 
+    u.userId !== currentUser?.userId && 
+    (!currentUser?.blacklist || !currentUser.blacklist.includes(u.userId))
+  );
+
+  if (otherProUsers.length === 0) {
+    tradesList.innerHTML = `<p class="empty-state">No other pro users available yet.</p>`;
+    return;
+  }
+
+  tradesList.innerHTML = otherProUsers.map(user => {
+    return `
+      <div class="item-card trader-card">
+        <h4>${user.username || user.accountName}</h4>
+        <p class="description">${user.profile?.bio || "No bio"}</p>
+        <div class="meta">
+          <span class="trust-level">Trust: ${user.profile?.trustLevel || 0}</span>
+          <span class="gender">${user.profile?.gender ? `(${user.profile.gender})` : ""}</span>
+        </div>
+        ${user.profile?.picture ? `<img src="${user.profile.picture}" alt="${user.username}" class="trader-picture">` : ""}
+        <button class="btn-primary create-trade-btn" data-user-id="${user.userId}">Create Trade with this User</button>
+      </div>
+    `;
+  }).join("");
+
+  // Wire create trade buttons
+  document.querySelectorAll(".create-trade-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const userId = btn.getAttribute("data-user-id");
+      openCreateTradeModal(userId);
+    });
+  });
+}
+
+function renderAuctionsTab() {
+  const auctionsList = document.getElementById("auctions-list");
+  if (!auctionsList) return;
+
+  const allAuctions = getAllAuctions() || [];
+  const currentUser = getCurrentUser();
+  
+  // Filter: exclude seller's own auctions, blacklisted users, and banned users
+  const visibleAuctions = allAuctions.filter(auction => {
+    const seller = getUserProfile(auction.sellerId);
+    if (!seller || seller.banned) return false;
+    if (auction.sellerId === currentUser?.userId) return false;
+    if (currentUser?.blacklist && currentUser.blacklist.includes(auction.sellerId)) return false;
+    return true;
+  });
+
+  if (visibleAuctions.length === 0) {
+    auctionsList.innerHTML = `<p class="empty-state">No active auctions right now.</p>`;
+    return;
+  }
+
+  auctionsList.innerHTML = visibleAuctions.map(auction => {
+    const seller = getUserProfile(auction.sellerId);
+    const highestBid = auction.bids && auction.bids.length > 0 ? auction.bids[0].amount : auction.startingPrice;
+    const nextMinBid = auction.bidType === "fixed" 
+      ? (highestBid + auction.minIncrement).toFixed(2)
+      : (highestBid + 0.01).toFixed(2);
+
+    return `
+      <div class="item-card auction-card">
+        <h4>${auction.title || "Untitled"}</h4>
+        <p class="description">${auction.description || ""}</p>
+        <div class="auction-details">
+          <div class="price-info">
+            <span>Starting Price: £${auction.startingPrice?.toFixed(2) || "0.00"}</span>
+            <span>Current Highest Bid: £${highestBid?.toFixed(2) || "0.00"}</span>
+            <span class="bid-type">${auction.bidType === "fixed" ? "Fixed Increment" : "Partial Bids"}</span>
+          </div>
+          <div class="bid-count">${auction.bids?.length || 0} bids</div>
+          <input type="number" class="bid-amount-input" placeholder="Enter bid amount (£${nextMinBid}+)" step="0.01" min="${nextMinBid}" data-auction-id="${auction.id}">
+          <button class="btn-primary place-bid-btn" data-auction-id="${auction.id}">Place Bid</button>
+        </div>
+        <p class="seller-info">Seller: ${seller?.username || "Unknown"}</p>
+      </div>
+    `;
+  }).join("");
+
+  // Wire bid buttons
+  document.querySelectorAll(".place-bid-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const auctionId = btn.getAttribute("data-auction-id");
+      const input = document.querySelector(`.bid-amount-input[data-auction-id="${auctionId}"]`);
+      const amount = parseFloat(input?.value) || 0;
+
+      if (amount <= 0) {
+        window.alert("Enter a valid bid amount.");
+        return;
+      }
+
+      if (placeBid(auctionId, amount)) {
+        window.alert("Bid placed successfully!");
+        renderAuctionsTab();
+      } else {
+        window.alert("Bid rejected. Make sure it meets minimum requirements.");
+      }
+    });
+  });
+}
+
+function renderProfileTabContent() {
+  const profileTab = document.getElementById("profile-tab");
+  if (!profileTab) return;
+
+  const currentUser = getCurrentUser();
+  const form = document.getElementById("profile-form");
+
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const bio = document.getElementById("profile-bio")?.value || "";
+      const gender = document.getElementById("profile-gender")?.value || "";
+      const picture = document.getElementById("profile-picture")?.value || "";
+
+      if (updateUserProfile({ bio, gender, picture })) {
+        window.alert("Profile updated!");
+      }
+    });
+  }
+
+  renderProfileBlacklist();
+}
+
+function renderProfileBlacklist() {
+  const blacklistList = document.getElementById("blacklist-list");
+  if (!blacklistList) return;
+
+  const currentUser = getCurrentUser();
+  const blacklistedUsers = currentUser?.blacklist || [];
+
+  if (blacklistedUsers.length === 0) {
+    blacklistList.innerHTML = `<p>No users blacklisted</p>`;
+    return;
+  }
+
+  blacklistList.innerHTML = blacklistedUsers.map(userId => {
+    const user = getUserProfile(userId);
+    return `
+      <div class="blacklist-item">
+        <span>${user?.username || user?.accountName || userId}</span>
+        <button class="btn-danger remove-blacklist-btn" data-user-id="${userId}">Remove</button>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".remove-blacklist-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const userId = btn.getAttribute("data-user-id");
+      if (removeFromBlacklist(userId)) {
+        window.alert("User removed from blacklist.");
+        renderProfileBlacklist();
+      }
+    });
+  });
+}
+
+function renderChatTabContent() {
+  const chatList = document.getElementById("chat-list");
+  const chatMessages = document.getElementById("chat-messages");
+  
+  if (!chatList || !chatMessages) return;
+
+  const myChats = getMyChats() || [];
+  const currentUser = getCurrentUser();
+
+  if (myChats.length === 0) {
+    chatList.innerHTML = `<p>No conversations yet</p>`;
+    chatMessages.innerHTML = `<div class="no-chat-selected">Start a conversation with another pro user</div>`;
+    return;
+  }
+
+  chatList.innerHTML = myChats.map(chat => {
+    const otherUserId = chat.participants.find(id => id !== currentUser?.userId);
+    const otherUser = getUserProfile(otherUserId);
+    return `
+      <div class="chat-item" data-chat-user="${otherUserId}">
+        <strong>${otherUser?.username || "Unknown"}</strong>
+        <small>${chat.messages?.length || 0} messages</small>
+      </div>
+    `;
+  }).join("");
+
+  // Wire chat item clicks
+  document.querySelectorAll(".chat-item").forEach(item => {
+    item.addEventListener("click", () => {
+      const userId = item.getAttribute("data-chat-user");
+      renderChatMessages(userId);
+    });
+  });
+}
+
+function renderChatMessages(userId) {
+  const chatMessages = document.getElementById("chat-messages");
+  const chatInput = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("send-message-btn");
+
+  if (!chatMessages || !chatInput || !sendBtn) return;
+
+  const chat = getChatWithUser(userId);
+  const otherUser = getUserProfile(userId);
+
+  chatMessages.innerHTML = `<h4>Chat with ${otherUser?.username || "Unknown"}</h4>` + (chat.messages || []).map(msg => {
+    const sender = msg.senderId === getCurrentUserId() ? "You" : otherUser?.username;
+    const direction = msg.senderId === getCurrentUserId() ? "sent" : "received";
+    return `
+      <div class="message ${direction}">
+        <strong>${sender}</strong>: ${msg.message}
+        <small>${new Date(msg.timestamp).toLocaleTimeString()}</small>
+      </div>
+    `;
+  }).join("");
+
+  chatInput.disabled = false;
+  chatInput.value = "";
+  sendBtn.disabled = false;
+
+  sendBtn.onclick = () => {
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    sendMessage(userId, message);
+    chatInput.value = "";
+    renderChatMessages(userId);
+  };
+
+  chatInput.onkeypress = (e) => {
+    if (e.key === "Enter") sendBtn.click();
+  };
+}
+
+function renderAdminTabContent() {
+  const adminTab = document.getElementById("admin-tab");
+  if (!adminTab || !isDeveloperSessionActive()) {
+    if (adminTab) adminTab.innerHTML = `<p>Developer access required</p>`;
+    return;
+  }
+
+  adminTab.innerHTML = `
+    <div class="admin-container">
+      <h3>Developer Admin Panel</h3>
+
+      <div class="admin-section">
+        <h4>Ban User</h4>
+        <div class="admin-form">
+          <input type="text" id="dev-ban-user-input" placeholder="Enter username to ban">
+          <button id="dev-ban-user-btn" class="btn-danger">Ban User</button>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h4>Ban Product</h4>
+        <div class="admin-form">
+          <input type="text" id="dev-ban-product-input" placeholder="Enter product ID">
+          <input type="text" id="dev-ban-product-user-input" placeholder="Enter user ID">
+          <button id="dev-ban-product-btn" class="btn-danger">Ban Product</button>
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h4>View All Requests</h4>
+        <div id="dev-all-requests" class="items-list">
+          ${renderAllRequestsForAdmin()}
+        </div>
+      </div>
+
+      <div class="admin-section">
+        <h4>View All Auctions</h4>
+        <div id="dev-all-auctions" class="items-list">
+          ${renderAllAuctionsForAdmin()}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Populate admin views
+  const allRequestsDiv = document.getElementById("dev-all-requests");
+  const allAuctionsDiv = document.getElementById("dev-all-auctions");
+
+  if (allRequestsDiv) {
+    allRequestsDiv.innerHTML = renderAllRequestsForAdmin();
+  }
+
+  if (allAuctionsDiv) {
+    allAuctionsDiv.innerHTML = renderAllAuctionsForAdmin();
+  }
+  const banUserBtn = document.getElementById("dev-ban-user-btn");
+  const banProductBtn = document.getElementById("dev-ban-product-btn");
+  const unbanUserBtn = document.getElementById("dev-unban-user-btn");
+  const unbanProductBtn = document.getElementById("dev-unban-product-btn");
+  const deleteUserBtn = document.getElementById("dev-action-delete-btn");
+  const upgradeProBtn = document.getElementById("dev-action-upgrade-pro-btn");
+  const removeProBtn = document.getElementById("dev-action-remove-pro-btn");
+
+  if (banUserBtn) {
+    banUserBtn.addEventListener("click", () => {
+      const username = document.getElementById("dev-ban-user-input")?.value;
+      if (!username) {
+        window.alert("Enter a username to ban.");
+        return;
+      }
+      const users = listAllUsers();
+      const targetUser = users.find(u => u.username === username);
+      if (targetUser) {
+        if (banUser(targetUser.userId)) {
+          window.alert(`User ${username} has been banned.`);
+          renderAdminTabContent(); // Refresh the admin panel
+        } else {
+          window.alert("Failed to ban user.");
+        }
+      } else {
+        window.alert("User not found.");
+      }
+    });
+  }
+
+  if (banProductBtn) {
+    banProductBtn.addEventListener("click", () => {
+      const productId = document.getElementById("dev-ban-product-input")?.value;
+      const userId = document.getElementById("dev-ban-product-user-input")?.value;
+      if (!productId || !userId) {
+        window.alert("Enter both product ID and user ID.");
+        return;
+      }
+      if (banUserProduct(userId, productId)) {
+        window.alert(`Product ${productId} banned for user ${userId}.`);
+        renderAdminTabContent(); // Refresh the admin panel
+      } else {
+        window.alert("Failed to ban product.");
+      }
+    });
+  }
+
+  if (unbanUserBtn) {
+    unbanUserBtn.addEventListener("click", () => {
+      const username = document.getElementById("dev-unban-user-input")?.value;
+      if (!username) {
+        window.alert("Enter a username to unban.");
+        return;
+      }
+      const users = listAllUsers();
+      const targetUser = users.find(u => u.username === username);
+      if (targetUser) {
+        if (unbanUser(targetUser.userId)) {
+          window.alert(`User ${username} has been unbanned.`);
+          renderAdminTabContent(); // Refresh the admin panel
+        } else {
+          window.alert("Failed to unban user.");
+        }
+      } else {
+        window.alert("User not found.");
+      }
+    });
+  }
+
+  if (unbanProductBtn) {
+    unbanProductBtn.addEventListener("click", () => {
+      const productId = document.getElementById("dev-unban-product-input")?.value;
+      const userId = document.getElementById("dev-unban-product-user-input")?.value;
+      if (!productId || !userId) {
+        window.alert("Enter both product ID and user ID.");
+        return;
+      }
+      if (unbanUserProduct(userId, productId)) {
+        window.alert(`Product ${productId} unbanned for user ${userId}.`);
+        renderAdminTabContent(); // Refresh the admin panel
+      } else {
+        window.alert("Failed to unban product.");
+      }
+    });
+  }
+
+  if (deleteUserBtn) {
+    deleteUserBtn.addEventListener("click", () => {
+      const username = document.getElementById("dev-delete-user-input")?.value;
+      if (!username) {
+        window.alert("Enter a username to delete.");
+        return;
+      }
+      if (window.confirm(`Are you sure you want to permanently delete user ${username}? This action cannot be undone.`)) {
+        const users = listAllUsers();
+        const targetUser = users.find(u => u.username === username);
+        if (targetUser) {
+          if (deleteUser(targetUser.userId)) {
+            window.alert(`User ${username} has been permanently deleted.`);
+            renderAdminTabContent(); // Refresh the admin panel
+          } else {
+            window.alert("Failed to delete user.");
+          }
+        } else {
+          window.alert("User not found.");
+        }
+      }
+    });
+  }
+
+  if (upgradeProBtn) {
+    upgradeProBtn.addEventListener("click", () => {
+      const username = document.getElementById("dev-upgrade-pro-input")?.value;
+      if (!username) {
+        window.alert("Enter a username to upgrade to Pro.");
+        return;
+      }
+      const users = listAllUsers();
+      const targetUser = users.find(u => u.username === username);
+      if (targetUser) {
+        if (upgradeUserToPro(targetUser.userId)) {
+          window.alert(`User ${username} has been upgraded to Pro status.`);
+          renderAdminTabContent(); // Refresh the admin panel
+        } else {
+          window.alert("Failed to upgrade user to Pro.");
+        }
+      } else {
+        window.alert("User not found.");
+      }
+    });
+  }
+
+  if (removeProBtn) {
+    removeProBtn.addEventListener("click", () => {
+      const username = document.getElementById("dev-remove-pro-input")?.value;
+      if (!username) {
+        window.alert("Enter a username to remove Pro status from.");
+        return;
+      }
+      const users = listAllUsers();
+      const targetUser = users.find(u => u.username === username);
+      if (targetUser) {
+        if (removeUserPro(targetUser.userId)) {
+          window.alert(`Pro status removed from user ${username}.`);
+          renderAdminTabContent(); // Refresh the admin panel
+        } else {
+          window.alert("Failed to remove Pro status.");
+        }
+      } else {
+        window.alert("User not found.");
+      }
+    });
+  }
+}
+
+function renderAllRequestsForAdmin() {
+  const allRequests = getAllRequests() || [];
+  if (allRequests.length === 0) return "<p>No requests yet</p>";
+
+  return allRequests.map(req => {
+    const requester = getUserProfile(req.userId);
+    return `
+      <div class="admin-item">
+        <strong>${req.title}</strong> - by ${requester?.username || "Unknown"} (Budget: £${req.budget})
+        <small>${req.status}</small>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderAllAuctionsForAdmin() {
+  const allAuctions = getAllAuctions() || [];
+  if (allAuctions.length === 0) return "<p>No auctions yet</p>";
+
+  return allAuctions.map(auction => {
+    const seller = getUserProfile(auction.sellerId);
+    return `
+      <div class="admin-item">
+        <strong>${auction.title}</strong> - by ${seller?.username || "Unknown"} (£${auction.startingPrice})
+        <small>${auction.status} - ${auction.bids?.length || 0} bids</small>
+      </div>
+    `;
+  }).join("");
+}
+
+function openCreateTradeModal(userId) {
+  const modal = document.getElementById("create-trade-modal");
+  const form = document.getElementById("create-trade-form");
+  
+  if (!modal || !form) return;
+
+  modal.classList.remove("hidden");
+
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const title = document.getElementById("trade-title")?.value || "";
+    const description = document.getElementById("trade-description")?.value || "";
+    const offering = document.getElementById("trade-offer")?.value || "";
+    const wanting = document.getElementById("trade-want")?.value || "";
+
+    if (createTradeOffer(userId, title, description, offering, wanting)) {
+      window.alert("Trade offer created!");
+      modal.classList.add("hidden");
+      form.reset();
+    }
+  };
+}
+
 function maybeOpenDeveloperPage() {
   if (isDeveloperSessionActive()) {
     openDeveloperPage();
@@ -1069,6 +1677,74 @@ if (authSubmitBtn) {
   window.__authSubmitBound = true;
 } else {
   window.__authSubmitBound = false;
+}
+
+// Marketplace modal handlers
+document.querySelectorAll(".modal-close, .modal .btn-primary").forEach(btn => {
+  if (btn.className.includes("modal-close")) {
+    btn.addEventListener("click", (e) => {
+      const modal = e.target.closest(".modal");
+      if (modal) modal.classList.add("hidden");
+    });
+  }
+});
+
+const createRequestBtn = document.getElementById("create-request-btn");
+const createRequestModal = document.getElementById("create-request-modal");
+const createRequestForm = document.getElementById("create-request-form");
+
+if (createRequestBtn && createRequestModal) {
+  createRequestBtn.addEventListener("click", () => {
+    createRequestModal.classList.remove("hidden");
+  });
+}
+
+if (createRequestForm) {
+  createRequestForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const title = document.getElementById("request-title")?.value || "";
+    const description = document.getElementById("request-description")?.value || "";
+    const budget = parseFloat(document.getElementById("request-budget")?.value) || 0;
+
+    if (createRequest(title, description, budget)) {
+      window.alert("Request created!");
+      createRequestForm.reset();
+      createRequestModal.classList.add("hidden");
+      renderRequestsTab();
+    } else {
+      window.alert("Failed to create request.");
+    }
+  });
+}
+
+const createAuctionBtn = document.getElementById("create-auction-btn");
+const createAuctionModal = document.getElementById("create-auction-modal");
+const createAuctionForm = document.getElementById("create-auction-form");
+
+if (createAuctionBtn && createAuctionModal) {
+  createAuctionBtn.addEventListener("click", () => {
+    createAuctionModal.classList.remove("hidden");
+  });
+}
+
+if (createAuctionForm) {
+  createAuctionForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const title = document.getElementById("auction-title")?.value || "";
+    const description = document.getElementById("auction-description")?.value || "";
+    const startingPrice = parseFloat(document.getElementById("auction-starting-price")?.value) || 0;
+    const bidType = document.getElementById("auction-bid-type")?.value || "partial";
+    const endsAt = document.getElementById("auction-end-date")?.value || "";
+
+    if (createAuction(title, description, startingPrice, bidType, endsAt)) {
+      window.alert("Auction created!");
+      createAuctionForm.reset();
+      createAuctionModal.classList.add("hidden");
+      renderAuctionsTab();
+    } else {
+      window.alert("Failed to create auction.");
+    }
+  });
 }
 
 document.addEventListener("click", (event) => {

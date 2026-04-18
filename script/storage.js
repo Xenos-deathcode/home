@@ -21,6 +21,24 @@ export function writeUserJson(key, value, userId = getCurrentUserId()) {
   localStorage.setItem(storageKey, JSON.stringify(value));
 }
 
+export function readGlobalJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    console.warn("Global storage read failed", e);
+    return fallback;
+  }
+}
+
+export function writeGlobalJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn("Global storage write failed", e);
+  }
+}
+
 function cloneAnswers(data) {
   return JSON.parse(JSON.stringify(data));
 }

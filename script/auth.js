@@ -306,12 +306,26 @@ export function getUserScopedStorageKey(baseKey, userId) {
   return `${baseKey}_${normalizedUserId}`;
 }
 
-export function deleteUser(targetUserId) {
+export function upgradeUserToPro(targetUserId) {
   const users = readUsers();
   const targetUser = Object.values(users).find(u => u.userId === targetUserId);
   if (targetUser) {
     const key = getUserKey(targetUser.accountName, targetUser.username);
-    delete users[key];
+    users[key].isPro = true;
+    users[key].proSince = new Date().toISOString();
+    writeUsers(users);
+    return true;
+  }
+  return false;
+}
+
+export function removeUserPro(targetUserId) {
+  const users = readUsers();
+  const targetUser = Object.values(users).find(u => u.userId === targetUserId);
+  if (targetUser) {
+    const key = getUserKey(targetUser.accountName, targetUser.username);
+    users[key].isPro = false;
+    users[key].proSince = null;
     writeUsers(users);
     return true;
   }

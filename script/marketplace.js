@@ -2,7 +2,7 @@
 // Handles requests, auctions, trading, chat, and marketplace management
 
 import { getCurrentUserId, getCurrentUser, isCurrentUserPro, readUsers, writeUsers } from "./auth.js";
-import { readUserJson, writeUserJson } from "./storage.js";
+import { readGlobalJson, writeGlobalJson } from "./storage.js";
 
 // Storage keys for marketplace data
 const MARKETPLACE_REQUESTS_KEY = "marketplace_requests_v1";
@@ -16,7 +16,7 @@ export function createRequest(title, description, budget) {
   const userId = getCurrentUserId();
   if (!userId) return null;
 
-  const requests = readUserJson(MARKETPLACE_REQUESTS_KEY, []);
+  const requests = readGlobalJson(MARKETPLACE_REQUESTS_KEY, []);
   const request = {
     id: `${userId}-${Date.now()}`,
     userId,
@@ -30,12 +30,12 @@ export function createRequest(title, description, budget) {
   };
 
   requests.push(request);
-  writeUserJson(MARKETPLACE_REQUESTS_KEY, requests);
+  writeGlobalJson(MARKETPLACE_REQUESTS_KEY, requests);
   return request;
 }
 
 export function getAllRequests() {
-  return readUserJson(MARKETPLACE_REQUESTS_KEY, []);
+  return readGlobalJson(MARKETPLACE_REQUESTS_KEY, []);
 }
 
 export function getOpenRequests() {
@@ -52,7 +52,7 @@ export function claimRequest(requestId) {
   if (requestIndex >= 0 && requests[requestIndex].status === "open") {
     requests[requestIndex].status = "in_progress";
     requests[requestIndex].helperId = userId;
-    writeUserJson(MARKETPLACE_REQUESTS_KEY, requests);
+    writeGlobalJson(MARKETPLACE_REQUESTS_KEY, requests);
     return true;
   }
   return false;
@@ -66,7 +66,7 @@ export function completeRequest(requestId) {
   if (requestIndex >= 0) {
     requests[requestIndex].status = "completed";
     requests[requestIndex].completedAt = new Date().toISOString();
-    writeUserJson(MARKETPLACE_REQUESTS_KEY, requests);
+    writeGlobalJson(MARKETPLACE_REQUESTS_KEY, requests);
     return true;
   }
   return false;
@@ -78,7 +78,7 @@ export function createAuction(title, description, startingPrice, bidType, endsAt
   const userId = getCurrentUserId();
   if (!userId) return null;
 
-  const auctions = readUserJson(MARKETPLACE_AUCTIONS_KEY, []);
+  const auctions = readGlobalJson(MARKETPLACE_AUCTIONS_KEY, []);
   const auction = {
     id: `${userId}-${Date.now()}`,
     sellerId: userId,
@@ -96,12 +96,12 @@ export function createAuction(title, description, startingPrice, bidType, endsAt
   };
 
   auctions.push(auction);
-  writeUserJson(MARKETPLACE_AUCTIONS_KEY, auctions);
+  writeGlobalJson(MARKETPLACE_AUCTIONS_KEY, auctions);
   return auction;
 }
 
 export function getAllAuctions() {
-  return readUserJson(MARKETPLACE_AUCTIONS_KEY, []);
+  return readGlobalJson(MARKETPLACE_AUCTIONS_KEY, []);
 }
 
 export function placeBid(auctionId, bidAmount) {
@@ -136,7 +136,7 @@ export function placeBid(auctionId, bidAmount) {
   // Sort bids by amount descending
   auction.bids.sort((a, b) => b.amount - a.amount);
 
-  writeUserJson(MARKETPLACE_AUCTIONS_KEY, auctions);
+  writeGlobalJson(MARKETPLACE_AUCTIONS_KEY, auctions);
   return true;
 }
 
@@ -153,7 +153,7 @@ export function endAuction(auctionId) {
       auction.status = "sold";
     }
 
-    writeUserJson(MARKETPLACE_AUCTIONS_KEY, auctions);
+    writeGlobalJson(MARKETPLACE_AUCTIONS_KEY, auctions);
     return auction;
   }
   return null;
@@ -165,7 +165,7 @@ export function createTradeOffer(targetUserId, title, description, offering, wan
   const userId = getCurrentUserId();
   if (!userId) return null;
 
-  const trades = readUserJson(MARKETPLACE_TRADES_KEY, []);
+  const trades = readGlobalJson(MARKETPLACE_TRADES_KEY, []);
   const trade = {
     id: `${userId}-${Date.now()}`,
     initiatorId: userId,
@@ -179,24 +179,24 @@ export function createTradeOffer(targetUserId, title, description, offering, wan
   };
 
   trades.push(trade);
-  writeUserJson(MARKETPLACE_TRADES_KEY, trades);
+  writeGlobalJson(MARKETPLACE_TRADES_KEY, trades);
   return trade;
 }
 
 export function getMyTrades() {
   const userId = getCurrentUserId();
-  const trades = readUserJson(MARKETPLACE_TRADES_KEY, []);
+  const trades = readGlobalJson(MARKETPLACE_TRADES_KEY, []);
   return trades.filter(t => t.initiatorId === userId || t.targetUserId === userId);
 }
 
 export function respondToTrade(tradeId, accept) {
   const userId = getCurrentUserId();
-  const trades = readUserJson(MARKETPLACE_TRADES_KEY, []);
+  const trades = readGlobalJson(MARKETPLACE_TRADES_KEY, []);
   const tradeIndex = trades.findIndex(t => t.id === tradeId && t.targetUserId === userId);
 
   if (tradeIndex >= 0) {
     trades[tradeIndex].status = accept ? "accepted" : "rejected";
-    writeUserJson(MARKETPLACE_TRADES_KEY, trades);
+    writeGlobalJson(MARKETPLACE_TRADES_KEY, trades);
     return true;
   }
   return false;
@@ -208,7 +208,7 @@ export function sendMessage(recipientId, message) {
   const userId = getCurrentUserId();
   if (!userId) return null;
 
-  const chats = readUserJson(MARKETPLACE_CHATS_KEY, {});
+  const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const chatKey = [userId, recipientId].sort().join("_");
 
   if (!chats[chatKey]) {
@@ -228,13 +228,13 @@ export function sendMessage(recipientId, message) {
   };
 
   chats[chatKey].messages.push(chatMessage);
-  writeUserJson(MARKETPLACE_CHATS_KEY, chats);
+  writeGlobalJson(MARKETPLACE_CHATS_KEY, chats);
   return chatMessage;
 }
 
 export function getChatWithUser(otherUserId) {
   const userId = getCurrentUserId();
-  const chats = readUserJson(MARKETPLACE_CHATS_KEY, {});
+  const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const chatKey = [userId, otherUserId].sort().join("_");
 
   return chats[chatKey] || { participants: [userId, otherUserId], messages: [] };
@@ -242,7 +242,7 @@ export function getChatWithUser(otherUserId) {
 
 export function getMyChats() {
   const userId = getCurrentUserId();
-  const chats = readUserJson(MARKETPLACE_CHATS_KEY, {});
+  const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const myChats = [];
 
   Object.values(chats).forEach(chat => {
@@ -256,7 +256,7 @@ export function getMyChats() {
 
 export function markMessagesRead(otherUserId) {
   const userId = getCurrentUserId();
-  const chats = readUserJson(MARKETPLACE_CHATS_KEY, {});
+  const chats = readGlobalJson(MARKETPLACE_CHATS_KEY, {});
   const chatKey = [userId, otherUserId].sort().join("_");
 
   if (chats[chatKey]) {
@@ -265,7 +265,7 @@ export function markMessagesRead(otherUserId) {
         msg.read = true;
       }
     });
-    writeUserJson(MARKETPLACE_CHATS_KEY, chats);
+    writeGlobalJson(MARKETPLACE_CHATS_KEY, chats);
   }
 }
 
@@ -283,4 +283,14 @@ export function getUserProfile(userId) {
 
 export function canAccessMarketplace() {
   return isCurrentUserPro();
+}
+
+export function isUserBlacklistedByMe(userId) {
+  const user = getCurrentUser();
+  return user && user.blacklist && user.blacklist.includes(userId);
+}
+
+export function isUserBanned(userId) {
+  const user = getUserProfile(userId);
+  return user && user.banned;
 }

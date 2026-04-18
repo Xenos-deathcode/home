@@ -639,32 +639,72 @@
           <div class="admin-section">
             <h4>Ban Users</h4>
             <div class="admin-form">
-              <input type="text" id="ban-user-input" placeholder="Enter username to ban">
-              <button id="ban-user-btn" class="btn-danger">Ban User</button>
-            </div>
-          </div>
-
-          <div class="admin-section">
-            <h4>Ban Products</h4>
-            <div class="admin-form">
-              <input type="text" id="ban-product-input" placeholder="Enter product ID to ban">
-              <button id="ban-product-btn" class="btn-danger">Ban Product</button>
+              <input type="text" id="dev-ban-user-input" placeholder="Enter username to ban">
+              <button id="dev-ban-user-btn" class="btn-danger">Ban User</button>
             </div>
           </div>
 
           <div class="admin-section">
             <h4>Unban Users</h4>
             <div class="admin-form">
-              <input type="text" id="unban-user-input" placeholder="Enter username to unban">
-              <button id="unban-user-btn" class="btn-success">Unban User</button>
+              <input type="text" id="dev-unban-user-input" placeholder="Enter username to unban">
+              <button id="dev-unban-user-btn" class="btn-success">Unban User</button>
             </div>
           </div>
 
           <div class="admin-section">
-            <h4>Unban Products</h4>
+            <h4>Delete Users (Permanent)</h4>
             <div class="admin-form">
-              <input type="text" id="unban-product-input" placeholder="Enter product ID to unban">
-              <button id="unban-product-btn" class="btn-success">Unban Product</button>
+              <input type="text" id="dev-delete-user-input" placeholder="Enter username to delete">
+              <button id="dev-action-delete-btn" class="btn-danger">Delete User</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Upgrade to Pro</h4>
+            <div class="admin-form">
+              <input type="text" id="dev-upgrade-pro-input" placeholder="Enter username to upgrade">
+              <button id="dev-action-upgrade-pro-btn" class="btn-primary">Upgrade to Pro</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Remove Pro Status</h4>
+            <div class="admin-form">
+              <input type="text" id="dev-remove-pro-input" placeholder="Enter username to remove Pro">
+              <button id="dev-action-remove-pro-btn" class="btn-warning">Remove Pro</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Ban Product</h4>
+            <div class="admin-form">
+              <input type="text" id="dev-ban-product-input" placeholder="Enter product ID">
+              <input type="text" id="dev-ban-product-user-input" placeholder="Enter user ID">
+              <button id="dev-ban-product-btn" class="btn-danger">Ban Product</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>Unban Product</h4>
+            <div class="admin-form">
+              <input type="text" id="dev-unban-product-input" placeholder="Enter product ID">
+              <input type="text" id="dev-unban-product-user-input" placeholder="Enter user ID">
+              <button id="dev-unban-product-btn" class="btn-success">Unban Product</button>
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>View All Requests</h4>
+            <div id="dev-all-requests" class="items-list">
+              <!-- Requests will be loaded here -->
+            </div>
+          </div>
+
+          <div class="admin-section">
+            <h4>View All Auctions</h4>
+            <div id="dev-all-auctions" class="items-list">
+              <!-- Auctions will be loaded here -->
             </div>
           </div>
         </div>
