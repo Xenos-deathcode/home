@@ -1140,6 +1140,95 @@ function renderAdminTabContent() {
       }
     });
   }
+
+  // New toggle Pro status functionality
+  const toggleProBtn = document.getElementById("dev-toggle-pro-btn");
+  const proStatusInput = document.getElementById("dev-pro-status-input");
+  const proStatusDisplay = document.getElementById("dev-pro-status-display");
+
+  if (toggleProBtn && proStatusInput && proStatusDisplay) {
+    // Function to update the status display
+    const updateProStatusDisplay = (username) => {
+      if (!username) {
+        proStatusDisplay.innerHTML = '<p class="status-neutral">Enter a username above</p>';
+        toggleProBtn.textContent = "Check Status";
+        toggleProBtn.disabled = true;
+        return;
+      }
+
+      const users = listAllUsers();
+      const targetUser = users.find(u => u.username === username);
+
+      if (!targetUser) {
+        proStatusDisplay.innerHTML = '<p class="status-error">User not found</p>';
+        toggleProBtn.textContent = "Check Status";
+        toggleProBtn.disabled = true;
+        return;
+      }
+
+      const isPro = targetUser.isPro;
+      const proSince = targetUser.proSince ? new Date(targetUser.proSince).toLocaleDateString() : 'N/A';
+
+      if (isPro) {
+        proStatusDisplay.innerHTML = `
+          <p class="status-success">✅ Pro Status: ACTIVE</p>
+          <p class="status-info">Pro since: ${proSince}</p>
+        `;
+        toggleProBtn.textContent = "Remove Pro Status";
+        toggleProBtn.className = "btn-warning";
+      } else {
+        proStatusDisplay.innerHTML = `
+          <p class="status-neutral">❌ Pro Status: INACTIVE</p>
+          <p class="status-info">User is not a Pro member</p>
+        `;
+        toggleProBtn.textContent = "Upgrade to Pro";
+        toggleProBtn.className = "btn-primary";
+      }
+
+      toggleProBtn.disabled = false;
+    };
+
+    // Initial state
+    updateProStatusDisplay("");
+
+    // Handle input changes
+    proStatusInput.addEventListener("input", (e) => {
+      updateProStatusDisplay(e.target.value.trim());
+    });
+
+    // Handle button clicks
+    toggleProBtn.addEventListener("click", () => {
+      const username = proStatusInput.value.trim();
+      if (!username) return;
+
+      const users = listAllUsers();
+      const targetUser = users.find(u => u.username === username);
+      if (!targetUser) return;
+
+      const isCurrentlyPro = targetUser.isPro;
+      const action = isCurrentlyPro ? "remove Pro status from" : "upgrade to Pro";
+      const actionVerb = isCurrentlyPro ? "remove" : "upgrade";
+
+      if (window.confirm(`Are you sure you want to ${action} user ${username}?`)) {
+        let success = false;
+        if (isCurrentlyPro) {
+          success = removeUserPro(targetUser.userId);
+        } else {
+          success = upgradeUserToPro(targetUser.userId);
+        }
+
+        if (success) {
+          const message = isCurrentlyPro
+            ? `Pro status removed from user ${username}.`
+            : `User ${username} has been upgraded to Pro status.`;
+          window.alert(message);
+          updateProStatusDisplay(username); // Refresh the display
+        } else {
+          window.alert(`Failed to ${actionVerb} user.`);
+        }
+      }
+    });
+  }
 }
 
 function renderAllRequestsForAdmin() {

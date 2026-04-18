@@ -1769,3 +1769,34 @@ input[type="email"] {
   .generated-site {
     padding: 12px;
   }
+
+/* =================== ADMIN STATUS DISPLAY =================== */
+
+.status-display {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.status-success {
+  color: #86efac;
+  font-weight: 500;
+}
+
+.status-error {
+  color: #fca5a5;
+  font-weight: 500;
+}
+
+.status-neutral {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.status-info {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: 4px;
+}
