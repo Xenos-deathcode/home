@@ -485,11 +485,15 @@ function normalize(value) {
 }
 
 function renderDeveloperUsers() {
+  if (!developerUsersGrid) {
+    console.error("Developer users grid element not found");
+    return;
+  }
   const users = listAllUsers();
   developerUsersGrid.innerHTML = "";
-  developerUsersEmpty.classList.toggle("hidden", users.length > 0);
-  developerProjectsPanel.classList.add("hidden");
-  developerProjectsGrid.innerHTML = "";
+  if (developerUsersEmpty) {
+    developerUsersEmpty.classList.toggle("hidden", users.length > 0);
+  }
 
   users.forEach(user => {
     const card = document.createElement("div");
@@ -518,8 +522,11 @@ function openDashboard(session) {
 }
 
 function openDeveloperPage() {
-  renderDeveloperUsers();
   showPage("developer-page");
+  // Show users list, hide detail view
+  if (developerUsersList) developerUsersList.classList.remove("hidden");
+  if (developerUserDetail) developerUserDetail.classList.add("hidden");
+  renderDeveloperUsers();
 }
 
 function openMarketplace() {

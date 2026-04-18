@@ -230,10 +230,16 @@ body {
 
 /* =================== DEVELOPER ADMIN VIEW =================== */
 
+#developer-users-list {
+  display: block;
+}
+
+#developer-users-list.hidden {
+  display: none;
+}
+
 .developer-detail-view {
   display: none;
-  min-height: 100vh;
-  background: #020617;
 }
 
 .developer-detail-view.hidden {
