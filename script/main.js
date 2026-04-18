@@ -336,6 +336,10 @@ function renderDashboard() {
 }
 
 function renderDeveloperProjects(user) {
+  console.log("renderDeveloperProjects called for user:", user.accountName);
+  console.log("developerUsersList:", developerUsersList);
+  console.log("developerUserDetail:", developerUserDetail);
+  
   const projects = listProjects(user.userId);
   
   // Count statistics
@@ -343,11 +347,19 @@ function renderDeveloperProjects(user) {
   const downloadedCount = projects.filter(p => p.downloaded).length;
 
   // Show fullscreen detail view
-  developerUsersList.classList.add("hidden");
-  developerUserDetail.classList.remove("hidden");
+  if (developerUsersList) {
+    developerUsersList.classList.add("hidden");
+    console.log("Hid users list");
+  }
+  if (developerUserDetail) {
+    developerUserDetail.classList.remove("hidden");
+    console.log("Showed user detail");
+  }
   
   // Update header
-  document.getElementById("developer-user-name").textContent = `${user.accountName} (@${user.username})`;
+  if (document.getElementById("developer-user-name")) {
+    document.getElementById("developer-user-name").textContent = `${user.accountName} (@${user.username})`;
+  }
 
   // Update user info
   document.getElementById("dev-info-account-name").textContent = user.accountName;
