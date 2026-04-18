@@ -235,19 +235,16 @@ body {
 }
 
 #developer-users-list.hidden {
-  display: none;
+  display: none !important;
 }
 
-.developer-detail-view {
-  display: none;
-}
-
-.developer-detail-view.hidden {
-  display: none;
-}
-
-.developer-detail-view.active {
+#developer-user-detail {
   display: block;
+  min-height: 100vh;
+}
+
+#developer-user-detail.hidden {
+  display: none !important;
 }
 
 .developer-detail-header {
