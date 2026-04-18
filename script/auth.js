@@ -305,3 +305,15 @@ export function getUserScopedStorageKey(baseKey, userId) {
   if (!normalizedUserId) return baseKey;
   return `${baseKey}_${normalizedUserId}`;
 }
+
+export function deleteUser(targetUserId) {
+  const users = readUsers();
+  const targetUser = Object.values(users).find(u => u.userId === targetUserId);
+  if (targetUser) {
+    const key = getUserKey(targetUser.accountName, targetUser.username);
+    delete users[key];
+    writeUsers(users);
+    return true;
+  }
+  return false;
+}

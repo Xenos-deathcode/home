@@ -54,6 +54,7 @@ import {
   removeFromBlacklist,
   banUser,
   unbanUser,
+  deleteUser,
   banUserProduct,
   unbanUserProduct,
   verifyCurrentUserPassword,
@@ -456,6 +457,43 @@ function renderDeveloperProjects(user) {
       }
     }
   };
+
+  // Setup delete button
+  const deleteBtn = document.getElementById("dev-action-delete-btn");
+  if (deleteBtn) {
+    deleteBtn.onclick = () => {
+      if (confirm(`⚠️ PERMANENTLY DELETE ${user.accountName}? This cannot be undone!`)) {
+        if (confirm("Are you absolutely sure? This will remove the user account and all their data.")) {
+          deleteUser(user.userId);
+          document.getElementById("dev-action-status").textContent = "✓ User permanently deleted";
+          setTimeout(() => {
+            // Return to users list after deletion
+            if (developerUsersList) developerUsersList.classList.remove("hidden");
+            if (developerUserDetail) developerUserDetail.classList.add("hidden");
+            renderDeveloperUsers();
+          }, 500);
+        }
+      }
+    };
+  }
+
+  // Display user requests
+  const allRequests = getOpenRequests();
+  const userRequests = allRequests.filter(req => req.createdBy === user.userId);
+  const requestsContainer = document.getElementById("dev-info-requests");
+  if (requestsContainer) {
+    if (userRequests.length === 0) {
+      requestsContainer.innerHTML = "<p>No help requests made yet</p>";
+    } else {
+      requestsContainer.innerHTML = userRequests.map(req => `
+        <div>
+          <strong>${req.title}</strong>
+          <p>${req.description}</p>
+          <small>Budget: £${req.budget} | Created: ${formatDate(req.createdAt)}</small>
+        </div>
+      `).join("");
+    }
+  }
 
   // Render projects
   developerProjectsDetailedGrid.innerHTML = "";

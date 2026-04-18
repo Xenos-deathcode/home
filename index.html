@@ -184,12 +184,21 @@
         <div class="admin-section">
           <h3>Admin Actions</h3>
           <div class="admin-actions-grid">
-            <button type="button" id="dev-action-ban-btn" class="btn-danger">Ban User</button>
+            <button type="button" id="dev-action-ban-btn" class="btn-danger">Ban User (Temporary)</button>
             <button type="button" id="dev-action-unban-btn" class="btn-success hidden">Unban User</button>
+            <button type="button" id="dev-action-delete-btn" class="btn-danger">Delete User (Permanent)</button>
             <button type="button" id="dev-action-upgrade-pro-btn" class="btn-primary">Upgrade to Pro</button>
             <button type="button" id="dev-action-remove-pro-btn" class="btn-secondary hidden">Remove Pro</button>
           </div>
           <div id="dev-action-status" class="status-message"></div>
+        </div>
+
+        <!-- User Requests List -->
+        <div class="admin-section">
+          <h3>Help Requests Made by This User</h3>
+          <div id="dev-info-requests" class="items-list">
+            <p>No requests made yet</p>
+          </div>
         </div>
 
         <!-- Projects List -->
