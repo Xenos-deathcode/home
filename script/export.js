@@ -1,8 +1,3 @@
-import { answers } from "./state.js";
-import { getCurrentProject, markCurrentProjectDownloaded } from "./storage.js";
-import { generateFullHtmlDocument } from "./generator.js";
-import { updateAnswersFromInputs } from "./ui.js";
-
 // exported.css content embedded as a string so ZIP works offline
 const EXPORTED_CSS = `
 body {
@@ -128,7 +123,7 @@ function canDownload() {
   return !!(project && project.paid);
 }
 
-export async function handleDownload(downloadStatusEl) {
+async function handleDownload(downloadStatusEl) {
   if (!canDownload()) {
     return { blocked: true };
   }

@@ -1,6 +1,3 @@
-import { TOTAL_STEPS, SECTIONS, answers } from "./state.js";
-import { generateSiteHtml } from "./generator.js";
-
 const startPage = document.getElementById("start-page");
 const formPage = document.getElementById("form-page");
 const resultPage = document.getElementById("result-page");

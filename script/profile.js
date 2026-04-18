@@ -1,15 +1,3 @@
-import {
-  getCurrentUser,
-  logOut,
-  updateUserProfile,
-  upgradeToPro,
-  isCurrentUserPro,
-  readUsers,
-  addToBlacklist,
-  removeFromBlacklist
-} from "./auth.js";
-import { showPage } from "./ui.js";
-
 const PROFILE_KEY = "user_profile_v1";
 
 function showProfilePage() {

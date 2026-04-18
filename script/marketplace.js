@@ -1,9 +1,6 @@
 // Marketplace functionality for Smart Website Builder
 // Handles requests, auctions, trading, chat, and marketplace management
 
-import { getCurrentUserId, getCurrentUser, isCurrentUserPro, readUsers, writeUsers } from "./auth.js";
-import { readGlobalJson, writeGlobalJson } from "./storage.js";
-
 // Storage keys for marketplace data
 const MARKETPLACE_REQUESTS_KEY = "marketplace_requests_v1";
 const MARKETPLACE_AUCTIONS_KEY = "marketplace_auctions_v1";

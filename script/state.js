@@ -1,4 +1,4 @@
-export const SECTIONS = {
+const SECTIONS = {
   ABOUT: "about",
   PRODUCTS: "products",
   GALLERY: "gallery",
@@ -6,14 +6,14 @@ export const SECTIONS = {
   CONTACT: "contact"
 };
 
-export const TOTAL_STEPS = 5;
-export const STORAGE_KEY = "smart_builder_answers_v2";
+const TOTAL_STEPS = 5;
+const STORAGE_KEY = "smart_builder_answers_v2";
 
-export function isPortfolio(data) {
+function isPortfolio(data) {
   return data.templateType === "portfolio";
 }
 
-export function createDefaultAnswers() {
+function createDefaultAnswers() {
   return {
     businessName: "",
     businessType: "",
@@ -36,9 +36,9 @@ export function createDefaultAnswers() {
   };
 }
 
-export const answers = createDefaultAnswers();
+const answers = createDefaultAnswers();
 
-export function resetAnswers() {
+function resetAnswers() {
   Object.assign(answers, createDefaultAnswers());
 }
 

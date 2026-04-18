@@ -1,7 +1,3 @@
-import { STORAGE_KEY, answers, createDefaultAnswers } from "./state.js";
-import { getCurrentUserId, getUserScopedStorageKey } from "./auth.js";
-import { updateInputsFromAnswers, updateLivePreviewDebounced } from "./ui.js";
-
 const PROJECTS_KEY = "smart_builder_projects_v2";
 const CURRENT_PROJECT_KEY = "smart_builder_current_project_v2";
 

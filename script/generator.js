@@ -1,5 +1,3 @@
-import { SECTIONS, isPortfolio } from "./state.js";
-
 function escapeHtml(str) {
   if (!str) return "";
   return str
